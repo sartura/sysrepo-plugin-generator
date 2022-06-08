@@ -131,8 +131,6 @@ class Generator:
 
         self.__generate_cmake_lists()
 
-        print(self.generated_files)
-
     def __generate_file(self, file, **kwargs):
         template = self.jinja_env.get_template("{}.jinja".format(file))
 
