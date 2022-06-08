@@ -153,7 +153,7 @@ Other parts of the plugin include:
 - [x] support API generation for each node (load, store, check)
 - [x] change `--outdir` to point to the root of the project, not the source folder as the current implementation
 - [x] include uthash library for every plugin
-- [ ] use clang-format to apply same code style to files
+- [x] use clang-format to apply same code style to files
 - [ ] support change API for each node
 - [ ] include all store, load and check API files into startup files
 - [ ] support types.h generation - generate C types based on libyang nodes
