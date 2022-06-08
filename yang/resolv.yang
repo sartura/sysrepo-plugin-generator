@@ -1,0 +1,176 @@
+module resolv {
+  yang-version 1.1;
+  namespace "aug:resolv";
+  prefix aug;
+
+  import augeas-extension {
+    prefix augex;
+  }
+  import ietf-inet-types {
+    prefix inet;
+    reference
+      "RFC 6991: Common YANG Data Types";
+  }
+
+  augex:augeas-mod-name "Resolv";
+
+  list resolv {
+    key "config-file";
+    leaf config-file {
+      type string;
+    }
+    list config-entries {
+      key "_id";
+      ordered-by user;
+      leaf _id {
+        type uint64;
+        description
+          "Implicitly generated list key to maintain the order of the augeas data.";
+      }
+      choice ch-config-entries {
+        mandatory true;
+        leaf nameserver {
+          augex:data-path "nameserver";
+          type inet:ip-address-no-zone;
+        }
+        leaf domain {
+          augex:data-path "domain";
+          type string {
+            pattern "[A-Za-z0-9_.-]+";
+          }
+        }
+        container search {
+          augex:data-path "search";
+          presence "Config entry.";
+          leaf-list domain {
+            augex:data-path "domain";
+            type string {
+              pattern "[A-Za-z0-9_.-]+";
+            }
+            min-elements 1;
+            ordered-by user;
+          }
+        }
+        container sortlist {
+          augex:data-path "sortlist";
+          presence "Config entry.";
+          list ipaddr-list {
+            key "_id";
+            min-elements 1;
+            ordered-by user;
+            leaf _id {
+              type uint64;
+              description
+                "Implicitly generated list key to maintain the order of the augeas data.";
+            }
+            container ipaddr {
+              augex:data-path "ipaddr";
+              augex:value-yang-path "ip";
+              presence "Config entry.";
+              leaf ip {
+                type inet:ip-address-no-zone;
+                mandatory true;
+              }
+              leaf netmask {
+                augex:data-path "netmask";
+                type inet:ip-address-no-zone;
+              }
+            }
+          }
+        }
+        container options {
+          augex:data-path "options";
+          presence "Config entry.";
+          list config-entries {
+            key "_id";
+            min-elements 1;
+            ordered-by user;
+            leaf _id {
+              type uint64;
+              description
+                "Implicitly generated list key to maintain the order of the augeas data.";
+            }
+            choice ch-config-entries {
+              mandatory true;
+              leaf ndots {
+                augex:data-path "ndots";
+                type uint64;
+              }
+              leaf timeout {
+                augex:data-path "timeout";
+                type uint64;
+              }
+              leaf attempts {
+                augex:data-path "attempts";
+                type uint64;
+              }
+              leaf node {
+                augex:data-path "$$";
+                type string {
+                  pattern "((((((debug)|(rotate))|(no-check-names))|(inet6))|(ip6-bytestring))|(edns0))|(single-request-reopen)";
+                }
+              }
+              container ip6-dotint {
+                augex:data-path "$$";
+                presence "Config entry.";
+                leaf label {
+                  type string {
+                    pattern "ip6-dotint";
+                  }
+                  mandatory true;
+                }
+                leaf negate {
+                  augex:data-path "negate";
+                  type empty;
+                }
+              }
+            }
+          }
+        }
+        container lookup {
+          augex:data-path "lookup";
+          presence "Config entry.";
+          choice ch-lookup {
+            mandatory true;
+            leaf-list bind {
+              augex:data-path "bind";
+              type string {
+                pattern "((bind)|(file))|(yp)";
+              }
+              min-elements 1;
+              ordered-by user;
+            }
+            leaf-list file {
+              augex:data-path "file";
+              type string {
+                pattern "((bind)|(file))|(yp)";
+              }
+              min-elements 1;
+              ordered-by user;
+            }
+            leaf-list yp {
+              augex:data-path "yp";
+              type string {
+                pattern "((bind)|(file))|(yp)";
+              }
+              min-elements 1;
+              ordered-by user;
+            }
+          }
+        }
+        container family {
+          augex:data-path "family";
+          presence "Config entry.";
+          leaf-list node {
+            augex:data-path "$$";
+            type string {
+              pattern "(inet4)|(inet6)";
+            }
+            min-elements 1;
+            ordered-by user;
+          }
+        }
+      }
+    }
+  }
+}

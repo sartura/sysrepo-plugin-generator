@@ -1,0 +1,62 @@
+module hosts {
+  yang-version 1.1;
+  namespace "aug:hosts";
+  prefix aug;
+
+  import augeas-extension {
+    prefix augex;
+  }
+
+  augex:augeas-mod-name "Hosts";
+
+  list hosts {
+    key "config-file";
+    leaf config-file {
+      type string;
+    }
+    list record-list {
+      key "_id";
+      ordered-by user;
+      leaf _id {
+        type uint64;
+        description
+          "Implicitly generated list key to maintain the order of the augeas data.";
+      }
+      container record {
+        augex:data-path "$$";
+        presence "Config entry.";
+        leaf host {
+          type uint64;
+          mandatory true;
+        }
+        leaf ipaddr {
+          augex:data-path "ipaddr";
+          type string {
+            pattern
+              "[^# 
+               \t]+";
+          }
+          mandatory true;
+        }
+        leaf canonical {
+          augex:data-path "canonical";
+          type string {
+            pattern
+              "[^# 
+               \t]+";
+          }
+          mandatory true;
+        }
+        leaf-list alias {
+          augex:data-path "alias";
+          type string {
+            pattern
+              "[^# 
+               \t]+";
+          }
+          ordered-by user;
+        }
+      }
+    }
+  }
+}

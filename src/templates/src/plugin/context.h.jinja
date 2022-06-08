@@ -1,0 +1,12 @@
+#ifndef {{plugin_prefix.upper()}}_PLUGIN_CONTEXT_H
+#define {{plugin_prefix.upper()}}_PLUGIN_CONTEXT_H
+
+#include <sysrepo_types.h>
+
+typedef struct {{plugin_prefix}}_ctx_s {{plugin_prefix}}_ctx_t;
+
+struct {{plugin_prefix}}_ctx_s {
+    sr_session_ctx_t *startup_session;
+};
+
+#endif // {{plugin_prefix.upper()}}_PLUGIN_CONTEXT_H

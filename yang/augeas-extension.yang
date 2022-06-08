@@ -1,0 +1,59 @@
+module augeas-extension {
+  yang-version 1.1;
+  namespace "aug:augeas-extension";
+  prefix augex;
+
+  extension augeas-mod-name {
+    argument modname;
+    description
+      "Argument 'modname' contains augeas module name.";
+  }
+  extension data-path {
+    argument path;
+    description
+      "The string contains the path to the data node in the Augeas tree.
+       Each data node in the Augeas tree has a 'label' indicating the node name.
+       The 'label' can be specified directly using the lense primitive 'label STR',
+       or it can be variable using the regular expression 'key RE',
+       or it can be some number which belongs to a counter specified by 'seq STR'.
+       Look at the corresponding tests of a particular Augeas module
+       (located somewhere in augeas/lenses/tests/test_*) for a better understanding
+       of what the Augeas tree looks like. The Augeas tree is basically printed
+       in the this format:
+       NODE = '{' LABEL VALUE? NODE? '}' NODE* | '{}'
+       LABEL = string
+       VALUE = '=' string
+
+       The effort of the augyang tool is to generate a YANG scheme that will
+       resemble the Augeas tree. But the mapping is not straightforward.
+       In some cases, it is necessary to add new nodes to the YANG schema.
+       So the mapping between the Augeas tree and the YANG schema is
+       marked by data-path extension. If you join the identifiers from
+       the data-path extensions from the root of the YANG tree to the some
+       YANG node, you get a path in the Augeas tree.
+
+       However, it is also necessary to add some special symbols that can
+       describe the address:
+
+       The variable name ('label') of the Augeas node can be defined by
+       'key STR' and 'seq STR' and this must be somehow marked in the data-path.
+       In the data-path, these variables are denoted by the symbol '$$'.
+       ";
+  }
+  extension value-yang-path {
+    argument path;
+    description
+      "The description of value-yang-path extension is closely related
+       to data-path.
+
+       An Augeas node can be defined by two regular expressions by
+       'key STR' and 'store STR' lense primitives. In this case,
+       two YANG nodes must be generated, with the first containing
+       the 'key STR' formula and the second the 'store STR'.
+       Between these YANG nodes, however, a special link must be
+       marked. Thus, the first node is marked by an value-yang-path
+       extension with an argument describing the relative YANG path to
+       the YANG node where the Augeas node value is located.
+       ";
+  }
+}

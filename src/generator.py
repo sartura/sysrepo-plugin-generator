@@ -1,0 +1,258 @@
+import libyang
+from libyang.schema import Node as LyNode
+import os
+import shutil
+import jinja2
+from walkers import startup, ly_tree, api
+from walkers.subscription import rpc, change, operational
+
+from utils import extract_defines, to_c_variable
+
+
+class Generator:
+    def __init__(self, prefix, outdir, module, yang_dir):
+        self.prefix = prefix
+        self.outdir = outdir
+        self.source_dir = os.path.join(outdir, "src")
+        self.ctx = libyang.Context(yang_dir)
+        self.module = self.ctx.load_module(module)
+        self.jinja_env = jinja2.Environment(
+            loader=jinja2.FileSystemLoader("src/templates"),
+            autoescape=jinja2.select_autoescape(),
+            trim_blocks=True,
+            lstrip_blocks=True
+        )
+
+        # append the path to the file once generated - at the end used with CMakeLists.txt
+        self.generated_files = []
+
+        # assume all features enabled for full module generation
+        self.module.feature_enable_all()
+
+        print("Loaded module %s:" % (self.module.name()))
+
+        # setup walkers
+        self.ly_tree_walker = ly_tree.Walker(
+            self.prefix, self.module.children())
+        self.startup_walker = startup.Walker(
+            self.prefix, self.module.children())
+        self.rpc_walker = rpc.Walker(
+            self.prefix, self.module.children())
+        self.change_walker = change.Walker(self.prefix, self.module.children())
+        self.operational_walker = operational.Walker(
+            self.prefix, self.module.children())
+        self.api_walker = api.Walker(
+            self.prefix, self.module.children(), self.source_dir)
+
+        # add all walkers to the list for easier extraction
+        all_walkers = [
+            # base
+            self.ly_tree_walker,
+            self.startup_walker,
+
+            # subscription
+            self.rpc_walker,
+            self.change_walker,
+            self.operational_walker,
+
+            # API
+            self.api_walker
+        ]
+
+        # extract all data
+        for walker in all_walkers:
+            walker.walk()
+
+    def generate_directories(self):
+        self.source_dir
+        plugin_dir = os.path.join(self.source_dir, "plugin")
+        cmake_modules_dir = os.path.join(self.outdir, "CMakeModules")
+        dirs = [
+            self.source_dir,
+            plugin_dir,
+            cmake_modules_dir,
+            os.path.join(plugin_dir, "subscription"),
+            os.path.join(plugin_dir, "startup"),
+            os.path.join(plugin_dir, "api"),
+            os.path.join(plugin_dir, "data"),
+        ]
+
+        for dir in dirs:
+            if not os.path.exists(dir):
+                os.mkdir(dir)
+
+        self.__generate_api_dirs()
+        self.__generate_data_dirs()
+
+    def __generate_api_dirs(self):
+        dirs = self.api_walker.get_directories()
+
+        for dir in dirs:
+            if not os.path.exists(dir):
+                os.mkdir(dir)
+
+    def __generate_data_dirs(self):
+        pass
+
+    def generate_files(self):
+        # copy cmake modules
+        self.__generate_cmake_files()
+
+        # generate files
+        self.__generate_common_h()
+        self.__generate_context_h()
+
+        # startup
+        self.__generate_startup_load_h()
+        self.__generate_startup_load_c()
+        self.__generate_startup_store_h()
+        self.__generate_startup_store_c()
+
+        # subscription
+        self.__generate_subscription_change_h()
+        self.__generate_subscription_change_c()
+        self.__generate_subscription_operational_h()
+        self.__generate_subscription_operational_c()
+        self.__generate_subscription_rpc_h()
+        self.__generate_subscription_rpc_c()
+
+        # ly_tree
+        self.__generate_ly_tree_h()
+        self.__generate_ly_tree_c()
+
+        # API and data files
+        self.__generate_api_files()
+        self.__generate_data_files()
+
+        self.__generate_plugin_h()
+        self.__generate_plugin_c()
+
+        self.__generate_main_c()
+
+        self.__generate_cmake_lists()
+
+        print(self.generated_files)
+
+    def __generate_file(self, file, **kwargs):
+        template = self.jinja_env.get_template("{}.jinja".format(file))
+
+        # generate #def's
+        self.defines, self.defines_map = extract_defines(
+            self.prefix, self.module)
+
+        path = os.path.join(self.outdir, file)
+        self.generated_files.append(file)
+        print("Generating {}".format(path))
+
+        with open(path, "w") as file:
+            file.write(template.render(kwargs))
+
+    def __generate_cmake_files(self):
+        modules_input_dir = "src/CMakeModules"
+        modules_output_dir = os.path.join(self.outdir, "CMakeModules")
+
+        for module in os.listdir(modules_input_dir):
+            src_path = os.path.join(modules_input_dir, module)
+            dst_path = os.path.join(modules_output_dir, module)
+
+            shutil.copyfile(src_path, dst_path)
+
+    def __generate_common_h(self):
+        self.defines, self.defines_map = extract_defines(
+            self.prefix, self.module)
+        self.__generate_file("src/plugin/common.h", plugin_prefix=self.prefix, module=self.module.name(),
+                             defines=self.defines)
+
+    def __generate_context_h(self):
+        self.__generate_file("src/plugin/context.h", plugin_prefix=self.prefix)
+
+    def __generate_startup_load_h(self):
+        self.__generate_file("src/plugin/startup/load.h",
+                             plugin_prefix=self.prefix)
+
+    def __generate_startup_load_c(self):
+        self.__generate_file("src/plugin/startup/load.c", plugin_prefix=self.prefix,
+                             load_callbacks=self.startup_walker.get_callbacks())
+
+    def __generate_startup_store_h(self):
+        self.__generate_file("src/plugin/startup/store.h",
+                             plugin_prefix=self.prefix)
+
+    def __generate_startup_store_c(self):
+        self.__generate_file("src/plugin/startup/store.c", plugin_prefix=self.prefix,
+                             store_callbacks=self.startup_walker.get_callbacks())
+
+    def __generate_subscription_change_h(self):
+        self.__generate_file("src/plugin/subscription/change.h", plugin_prefix=self.prefix,
+                             change_callbacks=self.change_walker.get_callbacks())
+
+    def __generate_subscription_change_c(self):
+        self.__generate_file("src/plugin/subscription/change.c", plugin_prefix=self.prefix,
+                             change_callbacks=self.change_walker.get_callbacks())
+
+    def __generate_subscription_operational_h(self):
+        self.__generate_file("src/plugin/subscription/operational.h", plugin_prefix=self.prefix,
+                             oper_callbacks=self.operational_walker.get_callbacks())
+
+    def __generate_subscription_operational_c(self):
+        self.__generate_file("src/plugin/subscription/operational.c", plugin_prefix=self.prefix,
+                             oper_callbacks=self.operational_walker.get_callbacks())
+
+    def __generate_subscription_rpc_h(self):
+        self.__generate_file("src/plugin/subscription/rpc.h", plugin_prefix=self.prefix,
+                             rpc_callbacks=self.rpc_walker.get_callbacks())
+
+    def __generate_subscription_rpc_c(self):
+        self.__generate_file("src/plugin/subscription/rpc.c", plugin_prefix=self.prefix,
+                             rpc_callbacks=self.rpc_walker.get_callbacks())
+
+    def __generate_ly_tree_h(self):
+        self.__generate_file("src/plugin/ly_tree.h",  plugin_prefix=self.prefix,
+                             ly_tree_functions=self.ly_tree_walker.get_functions(), LyNode=LyNode)
+
+    def __generate_ly_tree_c(self):
+        self.__generate_file("src/plugin/ly_tree.c",  plugin_prefix=self.prefix,
+                             ly_tree_functions=self.ly_tree_walker.get_functions(), LyNode=LyNode)
+
+    def __generate_api_files(self):
+        print("Generating API files:")
+        dirs = self.api_walker.get_directories()
+        dir_functions = self.api_walker.get_directory_functions()
+        files = self.api_walker.get_api_filenames()
+        types = self.api_walker.get_types()
+        for dir in dirs:
+            # generate all files in this directory
+            prefix, node_list = dir_functions[dir]
+            for file in files:
+                path = os.path.join(dir, file)
+                print("\tGenerating {}".format(path))
+                template = self.jinja_env.get_template(
+                    "src/plugin/api/{}.jinja".format(file))
+                with open(path, "w") as api_file:
+                    api_file.write(template.render(
+                        plugin_prefix=self.prefix, prefix=prefix, node_list=node_list, LyNode=LyNode, to_c_variable=to_c_variable, types=types))
+                    self.generated_files.append(
+                        path.replace(self.outdir, "")[1:])
+
+    def __generate_data_files(self):
+        pass
+
+    def __generate_plugin_h(self):
+        self.__generate_file("src/plugin.h", plugin_prefix=self.prefix, module=self.module.name(),
+                             defines=self.defines)
+
+    def __generate_plugin_c(self):
+        self.__generate_file("src/plugin.c", plugin_prefix=self.prefix, module=self.module.name(),
+                             rpc_callbacks=self.rpc_walker.get_callbacks(),
+                             oper_callbacks=self.operational_walker.get_callbacks(),
+                             change_callbacks=self.change_walker.get_callbacks(),
+                             defines_map=self.defines_map
+                             )
+
+    def __generate_main_c(self):
+        self.__generate_file(
+            "src/main.c", plugin_prefix=self.prefix, module=self.module.name())
+
+    def __generate_cmake_lists(self):
+        self.__generate_file(
+            "CMakeLists.txt", plugin_prefix=self.prefix, source_files=[file for file in self.generated_files if file[-2:] == ".c"])

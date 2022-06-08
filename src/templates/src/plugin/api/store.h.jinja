@@ -1,0 +1,18 @@
+#ifndef {{plugin_prefix.upper()}}_PLUGIN_API_{{prefix.upper()}}_STORE_H
+#define {{plugin_prefix.upper()}}_PLUGIN_API_{{prefix.upper()}}_STORE_H
+
+#include "plugin/context.h"
+
+{% for node in node_list %}
+    {% if node.nodetype() == LyNode.LIST %}
+int {{prefix}}_store_{{to_c_variable(node.name())}}({{plugin_prefix}}_ctx_t *ctx, const UT_array *{{to_c_variable(node.name())}});
+    {% endif %}
+    {% if node.nodetype() == LyNode.LEAFLIST %}
+int {{prefix}}_store_{{to_c_variable(node.name())}}({{plugin_prefix}}_ctx_t *ctx, const UT_array *{{to_c_variable(node.name())}});
+    {% endif %}
+    {% if node.nodetype() == LyNode.LEAF %}
+int {{prefix}}_store_{{to_c_variable(node.name())}}({{plugin_prefix}}_ctx_t *ctx, const {{types[node.type().basename()]}}{{" " if types[node.type().basename()][-1:] != "*" else ""}}{{to_c_variable(node.name())}});
+    {% endif %}
+{% endfor %}
+
+#endif // {{plugin_prefix.upper()}}_PLUGIN_API_{{prefix.upper()}}_STORE_H

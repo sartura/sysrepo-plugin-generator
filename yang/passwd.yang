@@ -1,0 +1,246 @@
+module passwd {
+  yang-version 1.1;
+  namespace "aug:passwd";
+  prefix aug;
+
+  import augeas-extension {
+    prefix augex;
+  }
+
+  augex:augeas-mod-name "Passwd";
+
+  grouping nisentry {
+    leaf password {
+      augex:data-path "password";
+      type string {
+        pattern
+          "[^:
+           ]+";
+      }
+    }
+    leaf uid {
+      augex:data-path "uid";
+      type uint64;
+    }
+    leaf gid {
+      augex:data-path "gid";
+      type uint64;
+    }
+    leaf name {
+      augex:data-path "name";
+      type string {
+        pattern
+          "[^:
+           ]+";
+      }
+    }
+    leaf home {
+      augex:data-path "home";
+      type string {
+        pattern
+          "[^:
+           ]+";
+      }
+    }
+    leaf shell {
+      augex:data-path "shell";
+      type string {
+        pattern
+          "[^ \t
+           ].*[^ \t
+           ]|[^ \t
+           ]";
+      }
+    }
+  }
+
+  list passwd {
+    key "config-file";
+    leaf config-file {
+      type string;
+    }
+    list config-entries {
+      key "_id";
+      ordered-by user;
+      leaf _id {
+        type uint64;
+        description
+          "Implicitly generated list key to maintain the order of the augeas data.";
+      }
+      choice ch-config-entries {
+        mandatory true;
+        container entry {
+          augex:data-path "$$";
+          presence "Config entry.";
+          leaf username {
+            type string {
+              pattern "[_.A-Za-z0-9][-_.A-Za-z0-9]*";
+            }
+            mandatory true;
+          }
+          leaf password {
+            augex:data-path "password";
+            type union {
+              type empty;
+              type string {
+                pattern
+                  "[^:
+                   ]+";
+              }
+            }
+            mandatory true;
+          }
+          leaf uid {
+            augex:data-path "uid";
+            type uint64;
+            mandatory true;
+          }
+          leaf gid {
+            augex:data-path "gid";
+            type uint64;
+            mandatory true;
+          }
+          leaf name {
+            augex:data-path "name";
+            type union {
+              type empty;
+              type string {
+                pattern
+                  "[^:
+                   ]+";
+              }
+            }
+            mandatory true;
+          }
+          leaf home {
+            augex:data-path "home";
+            type union {
+              type empty;
+              type string {
+                pattern
+                  "[^:
+                   ]+";
+              }
+            }
+            mandatory true;
+          }
+          leaf shell {
+            augex:data-path "shell";
+            type union {
+              type empty;
+              type string {
+                pattern
+                  "[^ \t
+                   ].*[^ \t
+                   ]|[^ \t
+                   ]";
+              }
+            }
+            mandatory true;
+          }
+        }
+        container nisentry {
+          augex:data-path "@nis";
+          augex:value-yang-path "username";
+          presence "Config entry.";
+          leaf username {
+            type string {
+              pattern "[_.A-Za-z0-9][-_.A-Za-z0-9]*";
+            }
+            mandatory true;
+          }
+          uses nisentry;
+        }
+        container nisdefault {
+          augex:data-path "@nisdefault";
+          presence "Config entry.";
+          leaf password {
+            augex:data-path "password";
+            type string {
+              pattern
+                "[^:
+                 ]*";
+            }
+          }
+          leaf uid {
+            augex:data-path "uid";
+            type union {
+              type string {
+                length "0";
+              }
+              type uint64;
+            }
+          }
+          leaf gid {
+            augex:data-path "gid";
+            type union {
+              type string {
+                length "0";
+              }
+              type uint64;
+            }
+          }
+          leaf name {
+            augex:data-path "name";
+            type union {
+              type empty;
+              type string {
+                pattern
+                  "[^:
+                   ]+";
+              }
+            }
+          }
+          leaf home {
+            augex:data-path "home";
+            type union {
+              type empty;
+              type string {
+                pattern
+                  "[^:
+                   ]+";
+              }
+            }
+          }
+          leaf shell {
+            augex:data-path "shell";
+            type union {
+              type empty;
+              type string {
+                pattern
+                  "[^ \t
+                   ].*[^ \t
+                   ]|[^ \t
+                   ]";
+              }
+            }
+          }
+        }
+        container nisuserplus {
+          augex:data-path "@+nisuser";
+          augex:value-yang-path "username";
+          presence "Config entry.";
+          leaf username {
+            type string {
+              pattern "[_.A-Za-z0-9][-_.A-Za-z0-9]*";
+            }
+            mandatory true;
+          }
+          uses nisentry;
+        }
+        container nisuserminus {
+          augex:data-path "@-nisuser";
+          augex:value-yang-path "username";
+          presence "Config entry.";
+          leaf username {
+            type string {
+              pattern "[_.A-Za-z0-9][-_.A-Za-z0-9]*";
+            }
+            mandatory true;
+          }
+          uses nisentry;
+        }
+      }
+    }
+  }
+}

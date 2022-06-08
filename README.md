@@ -1,92 +1,162 @@
 # sysrepo-plugin-generator
+Sysrepo plugin generator based on main YANG modules used for the specific plugin.
 
-Generate plugins based on main plugin YANG module.
-
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://lab.sartura.hr/dt/sysrepo-plugin-generator.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://lab.sartura.hr/dt/sysrepo-plugin-generator/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!).  Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+## Dependencies
+- libyang
+- Jinja2
 
 ## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+Provide needed arguments for the script and run it to generate plugin directory code and structure.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+Example for `ietf-system` YANG module:
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+```sh
+python3 sysrepo-plugin-generator.py -h
+usage: sysrepo-plugin-generator.py [-h] -p PREFIX -d DIR -m MODULE -o OUTDIR
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+Sysrepo plugin generator.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+optional arguments:
+  -h, --help            show this help message and exit
+  -p PREFIX, --prefix PREFIX
+                        Provide prefix that will be used in the plugin generation.
+  -d DIR, --dir DIR     Directory containing all the yang modules.
+  -m MODULE, --module MODULE
+                        Main YANG module to use for plugin generation.
+  -o OUTDIR, --outdir OUTDIR
+                        Output source directory to use.
+```
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+## Directory structure
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+The generator will follow the following source directory structure (the example is taken for the ietf-system plugin):
 
-## License
-For open source projects, say how it is licensed.
+```
+|-- main.c
+|-- plugin
+|   |-- api
+|   |   `-- system
+|   |       |-- authentication
+|   |       |   |-- change.c
+|   |       |   |-- change.h
+|   |       |   |-- check.c
+|   |       |   |-- check.h
+|   |       |   |-- load.c
+|   |       |   |-- load.h
+|   |       |   |-- store.c
+|   |       |   `-- store.h
+|   |       |-- change.c
+|   |       |-- change.h
+|   |       |-- check.c
+|   |       |-- check.h
+|   |       |-- clock
+|   |       |   |-- change.c
+|   |       |   |-- change.h
+|   |       |   |-- check.c
+|   |       |   |-- check.h
+|   |       |   |-- load.c
+|   |       |   |-- load.h
+|   |       |   |-- store.c
+|   |       |   `-- store.h
+|   |       |-- dns-resolver
+|   |       |   |-- change.c
+|   |       |   |-- change.h
+|   |       |   |-- check.c
+|   |       |   |-- check.h
+|   |       |   |-- load.c
+|   |       |   |-- load.h
+|   |       |   |-- options
+|   |       |   |   |-- change.c
+|   |       |   |   |-- change.h
+|   |       |   |   |-- check.c
+|   |       |   |   |-- check.h
+|   |       |   |   |-- load.c
+|   |       |   |   |-- load.h
+|   |       |   |   |-- store.c
+|   |       |   |   `-- store.h
+|   |       |   |-- store.c
+|   |       |   `-- store.h
+|   |       |-- load.c
+|   |       |-- load.h
+|   |       |-- ntp
+|   |       |   |-- change.c
+|   |       |   |-- change.h
+|   |       |   |-- check.c
+|   |       |   |-- check.h
+|   |       |   |-- load.c
+|   |       |   |-- load.h
+|   |       |   |-- store.c
+|   |       |   `-- store.h
+|   |       |-- radius
+|   |       |   |-- change.c
+|   |       |   |-- change.h
+|   |       |   |-- check.c
+|   |       |   |-- check.h
+|   |       |   |-- load.c
+|   |       |   |-- load.h
+|   |       |   |-- options
+|   |       |   |   |-- change.c
+|   |       |   |   |-- change.h
+|   |       |   |   |-- check.c
+|   |       |   |   |-- check.h
+|   |       |   |   |-- load.c
+|   |       |   |   |-- load.h
+|   |       |   |   |-- store.c
+|   |       |   |   `-- store.h
+|   |       |   |-- store.c
+|   |       |   `-- store.h
+|   |       |-- store.c
+|   |       `-- store.h
+|   |-- common.h
+|   |-- context.h
+|   |-- data
+|   |-- ly_tree.c
+|   |-- ly_tree.h
+|   |-- startup
+|   |   |-- load.c
+|   |   |-- load.h
+|   |   |-- store.c
+|   |   `-- store.h
+|   `-- subscription
+|       |-- change.c
+|       |-- change.h
+|       |-- operational.c
+|       |-- operational.h
+|       |-- rpc.c
+|       `-- rpc.h
+|-- plugin.c
+`-- plugin.h
+```
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+The main files are:
+  - `main.c` - plugin independent of `sysrepo-plugind`
+  - `plugin.h` - init and cleanup plugin callbacks
+  - `plugin.c` - init and cleanup implementation
+  - `common.h` - YANG paths and other commonly used macros
+  - `context.h` - used context throughout the plugin callbacks
+  - `types.h` - used types in the plugin (common structures, enums and unions)
+  - `ly_tree.(h|c)` - API for creating libyang tree nodes based on the main YANG module, here `ietf-system`
+
+Other parts of the plugin include:
+  - `plugin/api/` - the API for loading, storing and changing data on the system
+  - `plugin/data/` - helper functions for types defined in `types.h` - example would be implementing `init()` and `free()` functionalities for a list of types - TODO
+  - `plugin/startup/` - load and store functionalities for the startup datastore - initial load for startup when the plugin is first started and constant store API for when the plugin starts up again so that the state is left unchanged
+  - `plugin/subscription/` - change, operational and RPC/action callbacks, used in `plugin.c` file which subscribes all callbacks to their respective paths
+
+`plugin/data/` and `plugin/api/` folders use separation based on the YANG containers - for each container one folder is used which enables easier navigation. In these folders, files can be separated based on more containers or lists etc.
+
+## TODO
+- [x] support startup load and store generation
+- [x] support subscription callbacks generation
+- [x] add `--outdir` parameter support - setting output directory for C source and header generated files
+- [x] support `ly_tree` API generation
+- [x] support API generation for each node (load, store, check)
+- [x] change `--outdir` to point to the root of the project, not the source folder as the current implementation
+- [ ] include uthash library for every plugin
+- [ ] support change API for each node
+- [ ] include all store, load and check API files into startup files
+- [ ] support types.h generation - generate C types based on libyang nodes
+- [ ] support data code generation (optional for now)
+- [ ] support `augment` YANG nodes
+- [ ] generate CMakeLists.txt for the plugin
+- [ ] use clang-format to apply same code style to files

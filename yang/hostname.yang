@@ -1,0 +1,25 @@
+module hostname {
+  yang-version 1.1;
+  namespace "aug:hostname";
+  prefix aug;
+
+  import augeas-extension {
+    prefix augex;
+  }
+
+  augex:augeas-mod-name "Hostname";
+
+  list hostname {
+    key "config-file";
+    leaf config-file {
+      type string;
+    }
+    leaf hostname {
+      augex:data-path "hostname";
+      type string {
+        pattern "[A-Za-z0-9_.-]+";
+      }
+      mandatory true;
+    }
+  }
+}
