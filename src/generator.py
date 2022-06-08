@@ -1,6 +1,7 @@
 import libyang
 from libyang.schema import Node as LyNode
 import os
+import subprocess
 import shutil
 import jinja2
 from libraries.uthash import UTHashLibrary
@@ -154,6 +155,9 @@ class Generator:
         # cmake with all files to compile
         self.__generate_cmake_lists()
 
+        # apply style
+        self.__apply_clang_format()
+
     def __generate_file(self, file, **kwargs):
         template = self.jinja_env.get_template("{}.jinja".format(file))
 
@@ -277,3 +281,20 @@ class Generator:
     def __generate_cmake_lists(self):
         self.__generate_file(
             "CMakeLists.txt", plugin_prefix=self.prefix, source_files=[file for file in self.generated_files if file[-2:] == ".c"], include_dirs=self.include_dirs)
+
+    def __apply_clang_format(self):
+        if shutil.which("clang-format") is not None:
+            # copy the used clang-format file into the source directory and apply it to all generated files
+            src_path = "src/.clang-format"
+            dst_path = os.path.join(self.outdir, ".clang-format")
+
+            shutil.copyfile(src_path, dst_path)
+
+            for gen in self.generated_files:
+                # run clang-format command
+                if gen[-1:] == "c" or gen[-1:] == "h":
+                    params = ["clang-format", "-style=file",
+                              os.path.join(self.outdir, gen)]
+                    output = subprocess.check_output(params)
+                    with open(os.path.join(self.outdir, gen), "wb") as out_file:
+                        out_file.write(output)
