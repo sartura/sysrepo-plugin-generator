@@ -3,8 +3,10 @@ from libyang.schema import Node as LyNode
 import os
 import shutil
 import jinja2
+from libraries.uthash import UTHashLibrary
 from walkers import startup, ly_tree, api
 from walkers.subscription import rpc, change, operational
+from library import CLibrary
 
 from utils import extract_defines, to_c_variable
 
@@ -25,6 +27,7 @@ class Generator:
 
         # append the path to the file once generated - at the end used with CMakeLists.txt
         self.generated_files = []
+        self.include_dirs = ["src"]
 
         # assume all features enabled for full module generation
         self.module.feature_enable_all()
@@ -43,6 +46,10 @@ class Generator:
             self.prefix, self.module.children())
         self.api_walker = api.Walker(
             self.prefix, self.module.children(), self.source_dir)
+
+        self.libraries = [
+            UTHashLibrary(self.outdir),
+        ]
 
         # add all walkers to the list for easier extraction
         all_walkers = [
@@ -64,10 +71,11 @@ class Generator:
             walker.walk()
 
     def generate_directories(self):
-        self.source_dir
+        deps_dir = os.path.join(self.outdir, "deps")
         plugin_dir = os.path.join(self.source_dir, "plugin")
         cmake_modules_dir = os.path.join(self.outdir, "CMakeModules")
         dirs = [
+            deps_dir,
             self.source_dir,
             plugin_dir,
             cmake_modules_dir,
@@ -83,6 +91,10 @@ class Generator:
 
         self.__generate_api_dirs()
         self.__generate_data_dirs()
+
+        # generate library directories
+        for lib in self.libraries:
+            lib.generate_directories()
 
     def __generate_api_dirs(self):
         dirs = self.api_walker.get_directories()
@@ -124,11 +136,22 @@ class Generator:
         self.__generate_api_files()
         self.__generate_data_files()
 
+        # main files
         self.__generate_plugin_h()
         self.__generate_plugin_c()
-
         self.__generate_main_c()
 
+        # generate library files
+        for lib in self.libraries:
+            lib.generate_files()
+
+        # get include directories from the library
+        for lib in self.libraries:
+            paths = lib.get_include_dirs()
+            for path in paths:
+                self.include_dirs.append(path.replace(self.outdir, "")[1:])
+
+        # cmake with all files to compile
         self.__generate_cmake_lists()
 
     def __generate_file(self, file, **kwargs):
@@ -253,4 +276,4 @@ class Generator:
 
     def __generate_cmake_lists(self):
         self.__generate_file(
-            "CMakeLists.txt", plugin_prefix=self.prefix, source_files=[file for file in self.generated_files if file[-2:] == ".c"])
+            "CMakeLists.txt", plugin_prefix=self.prefix, source_files=[file for file in self.generated_files if file[-2:] == ".c"], include_dirs=self.include_dirs)

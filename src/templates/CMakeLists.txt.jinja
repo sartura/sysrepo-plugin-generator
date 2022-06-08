@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.0)
 project(sysrepo-plugin-{{plugin_prefix}} C)
 
 include_directories(
-    ${CMAKE_SOURCE_DIR}/src
+{% for id in include_dirs %}
+    ${CMAKE_SOURCE_DIR}/{{id}}
+{% endfor %}
 )
 
 set(

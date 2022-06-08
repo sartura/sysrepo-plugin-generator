@@ -2,6 +2,7 @@
 #define {{plugin_prefix.upper()}}_PLUGIN_API_{{prefix.upper()}}_LOAD_H
 
 #include "plugin/context.h"
+#include <utarray.h>
 
 {% for node in node_list %}
     {% if node.nodetype() == LyNode.LIST %}
