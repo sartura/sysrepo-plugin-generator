@@ -7,6 +7,8 @@ include_directories(
 {% endfor %}
 )
 
+set(PLUGIN 0 CACHE BOOL "Build a plugin")
+
 set(
     SOURCES
 
@@ -15,6 +17,11 @@ set(
 {% endfor %}
 )
 
+# append main.c file if not built as a sysrepo-plugind plugin
+if(NOT PLUGIN)
+    set(SOURCES ${SOURCES} src/main.c)
+endif()
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMakeModules")
 find_package(SYSREPO REQUIRED)
 find_package(LIBYANG REQUIRED)
@@ -22,10 +29,17 @@ find_package(SRPC REQUIRED)
 find_package(LIBSYSTEMD)
 find_package(AUGYANG)
 
-add_library(
-    ${PROJECT_NAME}
-    ${SOURCES}
-)
+if(PLUGIN)
+    add_library(
+        ${PROJECT_NAME}
+        MODULE ${SOURCES}
+    )
+else()
+    add_executable(
+        ${PROJECT_NAME}
+        ${SOURCES}
+    )
+endif()
 
 target_link_libraries(
     ${PROJECT_NAME}
