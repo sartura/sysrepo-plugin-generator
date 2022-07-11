@@ -61,7 +61,24 @@ class Walker(TreeWalker):
         last_path = self.ctx.dirs_stack[depth]
         last_prefix = self.ctx.prefix_stack[depth]
 
-        if node.nodetype() == LyNode.CONTAINER or node.nodetype() == LyNode.LIST:
+        if node.nodetype() == LyNode.CONTAINER:
+            # update dir stack
+            new_dir = os.path.join(last_path, node.name())
+            self.ctx.dirs_stack[depth +
+                                1] = new_dir
+            self.ctx.dirs.append(new_dir)
+
+            # update prefix stack
+            new_prefix = last_prefix + to_c_variable(node.name()) + "_"
+            self.ctx.prefix_stack[depth + 1] = new_prefix
+
+        if node.nodetype() == LyNode.LIST:
+            # append list callback to the current dir
+            if last_path not in self.ctx.dir_functions:
+                self.ctx.dir_functions[last_path] = (last_prefix[:-1], [])
+
+            self.ctx.dir_functions[last_path][1].append(node)
+
             # update dir stack
             new_dir = os.path.join(last_path, node.name())
             self.ctx.dirs_stack[depth +
