@@ -3,7 +3,7 @@ from generator import Generator
 
 # setup args
 arg_parser = argparse.ArgumentParser(description="Sysrepo plugin generator.")
-arg_parser.add_argument("-p", "--prefix", type=str, dest="prefix", required=True,
+arg_parser.add_argument("-p", "--prefix", type=str, dest="prefix",
                         help="Provide prefix that will be used in the plugin generation.")
 arg_parser.add_argument("-d", "--dir", type=str, dest="dir", required=True,
                         help="Directory containing all the yang modules.")

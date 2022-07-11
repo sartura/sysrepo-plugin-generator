@@ -14,7 +14,7 @@ from utils import extract_defines, to_c_variable
 
 class Generator:
     def __init__(self, prefix, outdir, modules, main_module, yang_dir):
-        self.prefix = prefix
+        # self.prefix = prefix
         self.outdir = outdir
         self.source_dir = os.path.join(outdir, "src")
         self.ctx = libyang.Context(yang_dir)
@@ -41,7 +41,12 @@ class Generator:
 
         print("Loaded module %s:" % (self.module.name()))
 
-        # setup walkers
+        if prefix is not None:
+            self.prefix = prefix
+        else:
+            self.prefix = self.module.prefix()
+
+            # setup walkers
         self.ly_tree_walker = ly_tree.Walker(
             self.prefix, self.module.children())
         self.startup_walker = startup.Walker(
