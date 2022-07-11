@@ -10,9 +10,9 @@ Provide needed arguments for the script and run it to generate plugin directory 
 
 Example for `ietf-system` YANG module:
 
-```sh
-python3 sysrepo-plugin-generator.py -h
-usage: sysrepo-plugin-generator.py [-h] -p PREFIX -d DIR -m MODULE -o OUTDIR
+```
+$ python3 sysrepo-plugin-generator.py -h
+usage: sysrepo-plugin-generator.py [-h] -p PREFIX -d DIR -m MODULES [MODULES ...] -M MAIN_MODULE -o OUTDIR
 
 Sysrepo plugin generator.
 
@@ -21,7 +21,9 @@ optional arguments:
   -p PREFIX, --prefix PREFIX
                         Provide prefix that will be used in the plugin generation.
   -d DIR, --dir DIR     Directory containing all the yang modules.
-  -m MODULE, --module MODULE
+  -m MODULES [MODULES ...], --modules MODULES [MODULES ...]
+                        YANG modules to use for plugin generation.
+  -M MAIN_MODULE, --main-module MAIN_MODULE
                         Main YANG module to use for plugin generation.
   -o OUTDIR, --outdir OUTDIR
                         Output source directory to use.
@@ -159,4 +161,4 @@ Other parts of the plugin include:
 - [ ] include all store, load and check API files into startup files
 - [ ] support types.h generation - generate C types based on libyang nodes
 - [ ] support data code generation (optional for now)
-- [ ] support `augment` YANG nodes
+- [x] support `augment` YANG nodes
