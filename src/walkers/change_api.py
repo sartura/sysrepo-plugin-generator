@@ -5,10 +5,10 @@ from libyang.schema import Node as LyNode
 from utils import to_c_variable
 
 
-class APIContext:
+class ChangeAPIContext:
     def __init__(self, source_dir):
         self.source_dir = source_dir
-        self.files = ['check', 'load', 'store']
+        self.files = ['change']
         self.extensions = ['c', 'h']
 
         self.dirs_stack = {
@@ -51,7 +51,7 @@ class APIContext:
 class Walker(TreeWalker):
     def __init__(self, prefix, root_nodes, source_dir):
         super().__init__(root_nodes)
-        self.ctx = APIContext(source_dir)
+        self.ctx = ChangeAPIContext(source_dir)
 
     def walk_node(self, node, depth):
         # print("\t" * depth, end="")
@@ -61,7 +61,7 @@ class Walker(TreeWalker):
         last_path = self.ctx.dirs_stack[depth]
         last_prefix = self.ctx.prefix_stack[depth]
 
-        if node.nodetype() == LyNode.CONTAINER:
+        if node.nodetype() == LyNode.CONTAINER or node.nodetype() == LyNode.LIST:
             # update dir stack
             new_dir = os.path.join(last_path, node.name())
             self.ctx.dirs_stack[depth +
@@ -72,12 +72,11 @@ class Walker(TreeWalker):
             new_prefix = last_prefix + to_c_variable(node.name()) + "_"
             self.ctx.prefix_stack[depth + 1] = new_prefix
 
-        if node.nodetype() == LyNode.LEAF or node.nodetype() == LyNode.LEAFLIST or node.nodetype() == LyNode.LIST:
+        if node.nodetype() == LyNode.LEAF or node.nodetype() == LyNode.LEAFLIST:
             if last_path not in self.ctx.dir_functions:
                 self.ctx.dir_functions[last_path] = (last_prefix[:-1], [])
 
             self.ctx.dir_functions[last_path][1].append(node)
-            return True
 
         return False
 
