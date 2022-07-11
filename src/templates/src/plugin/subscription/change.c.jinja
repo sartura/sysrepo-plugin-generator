@@ -34,17 +34,7 @@ int {{plugin_prefix}}_subscription_change_{{cb.sufix}}(sr_session_ctx_t *session
 			goto error_out;
 		}
 	} else if (event == SR_EV_CHANGE) {
-		error = sr_get_changes_iter(session, xpath, &changes_iterator);
-		if (error != SR_ERR_OK) {
-			SRPLG_LOG_ERR(PLUGIN_NAME, "sr_get_changes_iter() failed (%d): %s", error, sr_strerror(error));
-			goto error_out;
-		}
-
-		while (sr_get_change_tree_next(session, changes_iterator, &operation, &node, &prev_value, &prev_list, &prev_default) == SR_ERR_OK) {
-			// fetch node info
-			node_name = LYD_NAME(node);
-			node_value = lyd_get_value(node);
-		}
+		// connect change API
 	}
 
 	goto out;
