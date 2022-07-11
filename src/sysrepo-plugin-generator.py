@@ -7,14 +7,17 @@ arg_parser.add_argument("-p", "--prefix", type=str, dest="prefix", required=True
                         help="Provide prefix that will be used in the plugin generation.")
 arg_parser.add_argument("-d", "--dir", type=str, dest="dir", required=True,
                         help="Directory containing all the yang modules.")
-arg_parser.add_argument("-m", "--module", type=str, dest="module", required=True,
+arg_parser.add_argument("-m", "--modules", type=str, dest="modules", required=True, nargs="+",
+                        help="YANG modules to use for plugin generation.")
+arg_parser.add_argument("-M", "--main-module", type=str, dest="main_module", required=True,
                         help="Main YANG module to use for plugin generation.")
 arg_parser.add_argument("-o", "--outdir", type=str, dest="outdir", required=True,
                         help="Output source directory to use.")
 args = arg_parser.parse_args()
 
 # generate plugin structure
-generator = Generator(args.prefix, args.outdir, args.module, args.dir)
+generator = Generator(args.prefix, args.outdir,
+                      args.modules, args.main_module, args.dir)
 
 # generate directory structure
 generator.generate_directories()

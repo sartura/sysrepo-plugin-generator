@@ -7,18 +7,23 @@ import jinja2
 from libraries.uthash import UTHashLibrary
 from walkers import startup, ly_tree, api
 from walkers.subscription import rpc, change, operational
-from library import CLibrary
 
 from utils import extract_defines, to_c_variable
 
 
 class Generator:
-    def __init__(self, prefix, outdir, module, yang_dir):
+    def __init__(self, prefix, outdir, modules, main_module, yang_dir):
         self.prefix = prefix
         self.outdir = outdir
         self.source_dir = os.path.join(outdir, "src")
         self.ctx = libyang.Context(yang_dir)
-        self.module = self.ctx.load_module(module)
+
+        # load all needed modules
+        for m in modules:
+            self.ctx.load_module(m)
+
+        # use main module for plugin generation
+        self.module = self.ctx.get_module(main_module)
         self.jinja_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader("src/templates"),
             autoescape=jinja2.select_autoescape(),
