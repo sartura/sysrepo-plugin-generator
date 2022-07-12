@@ -8,8 +8,6 @@ Sysrepo plugin generator based on main YANG modules used for the specific plugin
 ## Usage
 Provide needed arguments for the script and run it to generate plugin directory code and structure.
 
-Example for `ietf-system` YANG module:
-
 ```
 $ python3 sysrepo-plugin-generator.py -h
 usage: sysrepo-plugin-generator.py [-h] -p PREFIX -d DIR -m MODULES [MODULES ...] -M MAIN_MODULE -o OUTDIR
@@ -146,19 +144,3 @@ Other parts of the plugin include:
   - `plugin/subscription/` - change, operational and RPC/action callbacks, used in `plugin.c` file which subscribes all callbacks to their respective paths
 
 `plugin/data/` and `plugin/api/` folders use separation based on the YANG containers - for each container one folder is used which enables easier navigation. In these folders, files can be separated based on more containers or lists etc.
-
-## TODO
-- [x] support startup load and store generation
-- [x] support subscription callbacks generation
-- [x] add `--outdir` parameter support - setting output directory for C source and header generated files
-- [x] support `ly_tree` API generation
-- [x] support API generation for each node (load, store, check)
-- [x] change `--outdir` to point to the root of the project, not the source folder as the current implementation
-- [x] include uthash library for every plugin
-- [x] generate CMakeLists.txt for the plugin
-- [x] use clang-format to apply same code style to files
-- [ ] support change API for each node
-- [ ] include all store, load and check API files into startup files
-- [ ] support types.h generation - generate C types based on libyang nodes
-- [ ] support data code generation (optional for now)
-- [x] support `augment` YANG nodes
