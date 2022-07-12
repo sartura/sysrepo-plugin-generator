@@ -19,6 +19,8 @@ class ChangeAPIContext:
             0: ''
         }
 
+        self.path_map = {}
+
         self.types = {
             "unknown": None,
             "binary": "void *",
@@ -78,6 +80,8 @@ class Walker(TreeWalker):
                 self.ctx.dir_functions[last_path] = (last_prefix[:-1], [])
 
             self.ctx.dir_functions[last_path][1].append(node)
+            self.ctx.path_map[node.data_path()] = (
+                last_prefix[:-1], node)
 
             # update dir stack
             new_dir = os.path.join(last_path, node.name())
@@ -94,6 +98,8 @@ class Walker(TreeWalker):
                 self.ctx.dir_functions[last_path] = (last_prefix[:-1], [])
 
             self.ctx.dir_functions[last_path][1].append(node)
+            self.ctx.path_map[node.data_path()] = (
+                last_prefix[:-1], node)
 
         return False
 
@@ -116,3 +122,6 @@ class Walker(TreeWalker):
 
     def get_types(self):
         return self.ctx.types
+
+    def get_path_map(self):
+        return self.ctx.path_map

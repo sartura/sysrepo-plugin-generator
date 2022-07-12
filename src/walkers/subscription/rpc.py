@@ -15,8 +15,8 @@ class Walker(TreeWalker):
         self.ctx = RPCContext()
 
     def walk_node(self, node, depth):
-        print("\t" * depth, end="")
-        print("{}[{}]".format(node.name(), node.keyword()))
+        # print("\t" * depth, end="")
+        # print("{}[{}]".format(node.name(), node.keyword()))
 
         self.ctx.callbacks.append(Callback(node.data_path(),
                                            to_c_variable(node.name())))
