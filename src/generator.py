@@ -86,6 +86,8 @@ class Generator:
             walker.walk()
 
         print(self.change_api_walker.get_directory_functions())
+        print(self.change_walker.get_callbacks())
+        print(self.change_api_walker.get_path_map())
 
     def generate_directories(self):
         deps_dir = os.path.join(self.outdir, "deps")
@@ -235,7 +237,7 @@ class Generator:
 
     def __generate_subscription_change_c(self):
         self.__generate_file("src/plugin/subscription/change.c", plugin_prefix=self.prefix,
-                             change_callbacks=self.change_walker.get_callbacks())
+                             change_callbacks=self.change_walker.get_callbacks(), change_path_map=self.change_api_walker.get_path_map(), to_c_variable=to_c_variable, dir_functions=self.change_api_walker.get_directory_functions())
 
     def __generate_subscription_operational_h(self):
         self.__generate_file("src/plugin/subscription/operational.h", plugin_prefix=self.prefix,

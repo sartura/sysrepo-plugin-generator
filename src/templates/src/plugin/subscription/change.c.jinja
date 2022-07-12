@@ -6,6 +6,11 @@
 #include <sysrepo.h>
 #include <srpc.h>
 
+// change API
+{% for dir in dir_functions.keys() %}
+#include "{{dir[dir.index('src/') + 4:]}}/change.h"
+{% endfor %}
+
 {% for cb in change_callbacks %}
 int {{plugin_prefix}}_subscription_change_{{cb.sufix}}(sr_session_ctx_t *session, uint32_t subscription_id, const char *module_name, const char *xpath, sr_event_t event, uint32_t request_id, void *private_data)
 {
@@ -35,6 +40,11 @@ int {{plugin_prefix}}_subscription_change_{{cb.sufix}}(sr_session_ctx_t *session
 		}
 	} else if (event == SR_EV_CHANGE) {
 		// connect change API
+		error = srpc_iterate_changes(ctx, session, xpath, {{change_path_map[cb.path][0]}}_change_{{to_c_variable(change_path_map[cb.path][1].name())}});
+		if (error) {
+			SRPLG_LOG_ERR(PLUGIN_NAME, "srpc_iterate_changes() for {{change_path_map[cb.path][0]}}_change_{{to_c_variable(change_path_map[cb.path][1].name())}} failed: %d", error);
+			goto error_out;
+		}
 	}
 
 	goto out;
