@@ -21,7 +21,7 @@ generate:
   stage: generate
 
   script:
-    - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
     - mkdir generated
     - mkdir generated/ietf-system generated/ietf-interfaces
     - python3 src/sysrepo-plugin-generator.py -d yang -m ietf-system -o gen/ietf-system -M ietf-system
