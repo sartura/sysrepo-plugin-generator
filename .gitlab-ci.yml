@@ -41,7 +41,7 @@ build:
   script:
     # build system plugin
     - mkdir generated/ietf-system/build && cd generated/ietf-system/build
-    - cmake -DSYSTEMD_IFINDEX=1 -DCMAKE_C_COMPILER=clang && make -j
+    - cmake -DSYSTEMD_IFINDEX=1 -DCMAKE_C_COMPILER=clang -S .. -B . && make -j
   
   artifacts:
     paths:
