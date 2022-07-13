@@ -1,0 +1,39 @@
+image: debian
+
+stages:
+  - generate
+  - build
+
+# install libraries
+before_script:
+  - apt update
+  - apt install python3-pip
+  - apt install clang cmake
+  - pip3 install libyang
+  - pip3 install Jinja2
+  # TODO: get sysrepo and libyang and build them
+
+generate:
+  stage: generate
+
+  script:
+    - mkdir generated
+    - mkdir generated/ietf-system generated/ietf-interfaces
+    - python3 src/sysrepo-plugin-generator.py -d yang -m ietf-system -o gen/ietf-system -M ietf-system
+    - python3 src/sysrepo-plugin-generator.py -d yang -m ietf-interfaces -o gen/ietf-interfaces -M ietf-interfaces
+  
+  artifacts:
+    paths:
+      - generated/
+
+build:
+  stage: build
+
+  script:
+    - mkdir generated/ietf-system/build
+    - mkdir generated/ietf-interfaces/build
+  
+  artifacts:
+    paths:
+      - generated/ietf-system/build
+      - generated/ietf-interfaces/build
