@@ -19,8 +19,8 @@ args = arg_parser.parse_args()
 generator = Generator(args.prefix, args.outdir,
                       args.modules, args.main_module, args.dir)
 
-# generate directory structure
-generator.generate_directories()
+# # generate directory structure
+# generator.generate_directories()
 
-# generate all files
-generator.generate_files()
+# # generate all files
+# generator.generate_files()

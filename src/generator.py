@@ -5,7 +5,7 @@ import subprocess
 import shutil
 import jinja2
 from libraries.uthash import UTHashLibrary
-from walkers import startup, ly_tree, api
+from walkers import startup, ly_tree, api, types
 from walkers.subscription import rpc, change, operational
 from walkers import change_api
 
@@ -61,6 +61,9 @@ class Generator:
         self.change_api_walker = change_api.Walker(
             self.prefix, self.module.children(), self.source_dir)
 
+        self.types_walker = types.Walker(
+            self.prefix, self.module.children())
+
         self.libraries = [
             UTHashLibrary(self.outdir),
         ]
@@ -70,6 +73,7 @@ class Generator:
             # base
             self.ly_tree_walker,
             self.startup_walker,
+            self.types_walker,
 
             # subscription
             self.rpc_walker,
@@ -85,9 +89,18 @@ class Generator:
         for walker in all_walkers:
             walker.walk()
 
-        print(self.change_api_walker.get_directory_functions())
-        print(self.change_walker.get_callbacks())
-        print(self.change_api_walker.get_path_map())
+        for s in self.types_walker.ctx.structs:
+            print("struct {}".format(s.name))
+            # s.vars.reverse()
+            for v in s.vars:
+                print("\t {} {}".format(v.type, v.name))
+            print()
+
+        for t in self.types_walker.ctx.typedefs:
+            print("typedef {} {} {}".format(t.type, t.name, t.typedef))
+
+        # print(self.types_walker.ctx.structs)
+        # print(self.types_walker.ctx.typedef_map)
 
     def generate_directories(self):
         deps_dir = os.path.join(self.outdir, "deps")
@@ -138,6 +151,7 @@ class Generator:
         # generate files
         self.__generate_common_h()
         self.__generate_context_h()
+        self.__generate_types_h()
 
         # startup
         self.__generate_startup_load_h()
@@ -214,6 +228,10 @@ class Generator:
 
     def __generate_context_h(self):
         self.__generate_file("src/plugin/context.h", plugin_prefix=self.prefix)
+
+    def __generate_types_h(self):
+        self.__generate_file("src/plugin/types.h", plugin_prefix=self.prefix,
+                             types_data=self.types_walker.get_types_data())
 
     def __generate_startup_load_h(self):
         self.__generate_file("src/plugin/startup/load.h",
