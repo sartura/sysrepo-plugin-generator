@@ -14,6 +14,7 @@ struct {{struct.name}} {
     {% for var in struct.vars %}
     {% if var.type in types %}
     {% if types[var.type] == None %}
+    {# use string as the default value when the type is not recognized #}
     char *{{var.name}};
     {% else %}
     {{types[var.type]}} {{var.name}};
