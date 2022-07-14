@@ -67,64 +67,81 @@ class Walker(TreeWalker):
         else:
             full_prefix = self.ctx.prefix
 
-        print("\t" * depth, end="")
+        # print("\t" * depth, end="")
         if node.nodetype() == LyNode.CONTAINER:
             self.ctx.prefix_stack[depth +
                                   1] = "{}_{}".format(full_prefix, node.name())
-            name = to_c_variable("{}_{}".format(full_prefix, node.name()))
-            print("struct {}:".format(name))
+            struct_name = to_c_variable(
+                "{}_{}".format(full_prefix, node.name()))
+            var_name = to_c_variable(node.name())
 
-            td = Typedef("struct", name)
-            sd = StructDef(name)
+            # print("struct {}:".format(name))
+
+            td = Typedef("struct", struct_name)
+            sd = StructDef(struct_name)
 
             self.ctx.typedefs.append(td)
             self.ctx.structs.append(sd)
 
-            self.ctx.typedef_map[name] = sd
+            self.ctx.typedef_map[struct_name] = sd
 
             parent = to_c_variable(full_prefix)
 
             if parent in self.ctx.typedef_map:
                 # add var def to the parent
                 self.ctx.typedef_map[parent].vars.append(
-                    VarDef(self.ctx.typedef_map[name].name, to_c_variable(node.name())))
+                    VarDef(td.typedef, var_name))
 
         elif node.nodetype() == LyNode.LEAF:
             print("{} {}".format(node.type().basename(), node.name()))
-            vd = VarDef(node.type().basename(), to_c_variable(node.name()))
-            name = to_c_variable(full_prefix)
+            struct_name = to_c_variable(full_prefix)
 
             # previous value has to be a struct of some kind
-            self.ctx.typedef_map[name].vars.append(vd)
+            self.ctx.typedef_map[struct_name].vars.append(
+                VarDef(node.type().basename(), to_c_variable(node.name())))
 
         elif node.nodetype() == LyNode.LIST:
             self.ctx.prefix_stack[depth +
                                   1] = "{}_{}".format(full_prefix, node.name())
-            name = to_c_variable("{}_{}".format(full_prefix, node.name()))
-            print("struct {}:".format(name))
-
-            td = Typedef("struct", name)
-            sd = StructDef(name)
-
-            self.ctx.typedefs.append(td)
-            self.ctx.structs.append(sd)
-
-            self.ctx.typedef_map[name] = sd
+            struct_name = to_c_variable(
+                "{}_{}".format(full_prefix, node.name()))
+            var_name = to_c_variable(node.name())
 
             # element struct
-            element_name = "{}_element".format(name)
-            sd = StructDef(element_name)
-            sd.vars.append(VarDef(td.typedef, node.name()))
-            sd.vars.append(VarDef(td.typedef + "*", "next"))
-            self.ctx.structs.append(sd)
-            self.ctx.typedef_map[element_name] = sd
+            element_name = to_c_variable("{}_element".format(struct_name))
+            element_var_name = to_c_variable(node.name())
 
+            print("struct {}:".format(struct_name))
+
+            # element
+            element_td = Typedef("struct", element_name)
+            element_sd = StructDef(element_name)
+
+            # data
+            data_td = Typedef("struct", struct_name)
+            data_sd = StructDef(struct_name)
+
+            # add struct variables - data element + pointer to the next node
+            element_sd.vars.append(
+                VarDef(data_td.typedef, element_var_name))
+            element_sd.vars.append(VarDef(element_td.typedef + "*", "next"))
+
+            self.ctx.typedefs.append(element_td)
+            self.ctx.structs.append(element_sd)
+
+            # add to typedef map
+            self.ctx.typedef_map[element_name] = element_sd
+
+            self.ctx.typedefs.append(data_td)
+            self.ctx.structs.append(data_sd)
+
+            self.ctx.typedef_map[struct_name] = data_sd
+
+            # add to parent struct
             parent = to_c_variable(full_prefix)
-
             if parent in self.ctx.typedef_map:
-                # add var def to the parent
                 self.ctx.typedef_map[parent].vars.append(
-                    VarDef(self.ctx.typedef_map[element_name].name + "*", to_c_variable(node.name())))
+                    VarDef(element_td.typedef + "*", var_name))
 
         return super().walk_node(node, depth)
 

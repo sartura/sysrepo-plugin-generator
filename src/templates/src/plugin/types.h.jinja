@@ -1,4 +1,29 @@
 #ifndef {{plugin_prefix.upper()}}_PLUGIN_TYPES_H
 #define {{plugin_prefix.upper()}}_PLUGIN_TYPES_H
 
+#include <stdbool.h>
+#include <stdint.h>
+
+// typedefs
+{% for td in typedefs %}
+typedef {{td.type}} {{td.name}} {{td.typedef}};
+{% endfor %}
+
+{% for struct in structs %}
+struct {{struct.name}} {
+    {% for var in struct.vars %}
+    {% if var.type in types %}
+    {% if types[var.type] == None %}
+    char *{{var.name}};
+    {% else %}
+    {{types[var.type]}} {{var.name}};
+    {% endif %}
+    {% else %}
+    {{var.type}} {{var.name}};
+    {% endif %}
+    {% endfor %}
+};
+
+{% endfor %}
+
 #endif // {{plugin_prefix.upper()}}_PLUGIN_TYPES_H

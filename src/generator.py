@@ -89,18 +89,22 @@ class Generator:
         for walker in all_walkers:
             walker.walk()
 
+        self.types_walker.ctx.structs.reverse()
+
         for s in self.types_walker.ctx.structs:
             print("struct {}".format(s.name))
-            # s.vars.reverse()
+            s.vars.reverse()
             for v in s.vars:
                 print("\t {} {}".format(v.type, v.name))
             print()
 
+        self.types_walker.ctx.typedefs.reverse()
+
         for t in self.types_walker.ctx.typedefs:
             print("typedef {} {} {}".format(t.type, t.name, t.typedef))
 
-        # print(self.types_walker.ctx.structs)
-        # print(self.types_walker.ctx.typedef_map)
+        print(self.types_walker.ctx.structs)
+        print(self.types_walker.ctx.typedef_map)
 
     def generate_directories(self):
         deps_dir = os.path.join(self.outdir, "deps")
@@ -231,7 +235,11 @@ class Generator:
 
     def __generate_types_h(self):
         self.__generate_file("src/plugin/types.h", plugin_prefix=self.prefix,
-                             types_data=self.types_walker.get_types_data())
+                             structs=self.types_walker.ctx.structs,
+                             enums=self.types_walker.ctx.enums,
+                             unions=self.types_walker.ctx.unions,
+                             typedefs=self.types_walker.ctx.typedefs,
+                             types=self.api_walker.get_types())
 
     def __generate_startup_load_h(self):
         self.__generate_file("src/plugin/startup/load.h",
@@ -346,6 +354,8 @@ class Generator:
     def __generate_cmake_lists(self):
         self.__generate_file(
             "CMakeLists.txt", plugin_prefix=self.prefix, source_files=[file for file in self.generated_files if file[-2:] == ".c"], include_dirs=self.include_dirs)
+        self.__generate_file(
+            "CompileOptions.cmake")
 
     def __apply_clang_format(self):
         if shutil.which("clang-format") is not None:
