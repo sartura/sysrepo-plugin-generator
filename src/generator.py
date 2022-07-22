@@ -358,6 +358,7 @@ class Generator:
             "CompileOptions.cmake")
 
     def __apply_clang_format(self):
+        print("Applying .clang-format style")
         if shutil.which("clang-format") is not None:
             # copy the used clang-format file into the source directory and apply it to all generated files
             src_path = "src/.clang-format"
@@ -368,6 +369,7 @@ class Generator:
             for gen in self.generated_files:
                 # run clang-format command
                 if gen[-1:] == "c" or gen[-1:] == "h":
+                    print("Applying style to {}".format(gen))
                     params = ["clang-format", "-style=file",
                               os.path.join(self.outdir, gen)]
                     output = subprocess.check_output(params)
