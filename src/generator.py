@@ -100,11 +100,15 @@ class Generator:
 
         self.types_walker.ctx.typedefs.reverse()
 
+        for e in self.types_walker.ctx.enums:
+            print("enum {}:".format(e.name))
+            e.values.reverse()
+            for v in e.values:
+                print("\t {}".format(v))
+            print()
+
         for t in self.types_walker.ctx.typedefs:
             print("typedef {} {} {}".format(t.type, t.name, t.typedef))
-
-        print(self.types_walker.ctx.structs)
-        print(self.types_walker.ctx.typedef_map)
 
     def generate_directories(self):
         deps_dir = os.path.join(self.outdir, "deps")
