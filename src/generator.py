@@ -5,7 +5,7 @@ import subprocess
 import shutil
 import jinja2
 from libraries.uthash import UTHashLibrary
-from walkers import startup, ly_tree, api
+from walkers import startup, ly_tree, api, types
 from walkers.subscription import rpc, change, operational
 from walkers import change_api
 
@@ -61,6 +61,9 @@ class Generator:
         self.change_api_walker = change_api.Walker(
             self.prefix, self.module.children(), self.source_dir)
 
+        self.types_walker = types.Walker(
+            self.prefix, self.module.children())
+
         self.libraries = [
             UTHashLibrary(self.outdir),
         ]
@@ -70,6 +73,7 @@ class Generator:
             # base
             self.ly_tree_walker,
             self.startup_walker,
+            self.types_walker,
 
             # subscription
             self.rpc_walker,
@@ -85,9 +89,26 @@ class Generator:
         for walker in all_walkers:
             walker.walk()
 
-        print(self.change_api_walker.get_directory_functions())
-        print(self.change_walker.get_callbacks())
-        print(self.change_api_walker.get_path_map())
+        self.types_walker.ctx.structs.reverse()
+
+        for s in self.types_walker.ctx.structs:
+            print("struct {}".format(s.name))
+            s.vars.reverse()
+            for v in s.vars:
+                print("\t {} {}".format(v.type, v.name))
+            print()
+
+        self.types_walker.ctx.typedefs.reverse()
+
+        for e in self.types_walker.ctx.enums:
+            print("enum {}:".format(e.name))
+            e.values.reverse()
+            for v in e.values:
+                print("\t {}".format(v))
+            print()
+
+        for t in self.types_walker.ctx.typedefs:
+            print("typedef {} {} {}".format(t.type, t.name, t.typedef))
 
     def generate_directories(self):
         deps_dir = os.path.join(self.outdir, "deps")
@@ -138,6 +159,7 @@ class Generator:
         # generate files
         self.__generate_common_h()
         self.__generate_context_h()
+        self.__generate_types_h()
 
         # startup
         self.__generate_startup_load_h()
@@ -214,6 +236,14 @@ class Generator:
 
     def __generate_context_h(self):
         self.__generate_file("src/plugin/context.h", plugin_prefix=self.prefix)
+
+    def __generate_types_h(self):
+        self.__generate_file("src/plugin/types.h", plugin_prefix=self.prefix,
+                             structs=self.types_walker.ctx.structs,
+                             enums=self.types_walker.ctx.enums,
+                             unions=self.types_walker.ctx.unions,
+                             typedefs=self.types_walker.ctx.typedefs,
+                             types=self.api_walker.get_types())
 
     def __generate_startup_load_h(self):
         self.__generate_file("src/plugin/startup/load.h",
@@ -328,8 +358,11 @@ class Generator:
     def __generate_cmake_lists(self):
         self.__generate_file(
             "CMakeLists.txt", plugin_prefix=self.prefix, source_files=[file for file in self.generated_files if file[-2:] == ".c"], include_dirs=self.include_dirs)
+        self.__generate_file(
+            "CompileOptions.cmake")
 
     def __apply_clang_format(self):
+        print("Applying .clang-format style")
         if shutil.which("clang-format") is not None:
             # copy the used clang-format file into the source directory and apply it to all generated files
             src_path = "src/.clang-format"
@@ -340,6 +373,7 @@ class Generator:
             for gen in self.generated_files:
                 # run clang-format command
                 if gen[-1:] == "c" or gen[-1:] == "h":
+                    print("Applying style to {}".format(gen))
                     params = ["clang-format", "-style=file",
                               os.path.join(self.outdir, gen)]
                     output = subprocess.check_output(params)
