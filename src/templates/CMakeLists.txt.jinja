@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
 project(sysrepo-plugin-{{plugin_prefix}} C)
 
+set(PLUGIN_LIBRARY_NAME srplg-{{plugin_prefix}})
+
 include_directories(
 {% for id in include_dirs %}
     ${CMAKE_SOURCE_DIR}/{{id}}
@@ -13,14 +15,27 @@ set(
     SOURCES
 
 {% for src_file in source_files %}
+    {% if src_file != "src/main.c" %}
     {{src_file}}
+    {% endif %}
 {% endfor %}
 )
 
-# append main.c file if not built as a sysrepo-plugind plugin
-if(NOT PLUGIN)
-    set(SOURCES ${SOURCES} src/main.c)
-endif()
+# plugin library
+add_library(
+    ${PLUGIN_LIBRARY_NAME}
+    STATIC
+    ${SOURCES}
+)
+
+# link plugin library
+target_link_libraries(
+    ${PLUGIN_LIBRARY_NAME}
+
+    ${SYSREPO_LIBRARIES}
+    ${LIBYANG_LIBRARIES}
+    ${SRPC_LIBRARIES}
+)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMakeModules")
 find_package(SYSREPO REQUIRED)
@@ -30,23 +45,33 @@ find_package(LIBSYSTEMD)
 find_package(AUGYANG)
 
 if(PLUGIN)
+    # ignore plugin library and compile PROJECT_NAME as a module
     add_library(
         ${PROJECT_NAME}
         MODULE ${SOURCES}
     )
+    target_link_libraries(
+        ${PROJECT_NAME}
+        ${SYSREPO_LIBRARIES}
+        ${LIBYANG_LIBRARIES}
+        ${SRPC_LIBRARIES}
+    )
 else()
     add_executable(
         ${PROJECT_NAME}
-        ${SOURCES}
+        src/main.c
+    )
+    target_link_libraries(
+        ${PROJECT_NAME}
+
+        # link plugin library with executable
+        ${PLUGIN_LIBRARY_NAME}
+
+        ${SYSREPO_LIBRARIES}
+        ${LIBYANG_LIBRARIES}
+        ${SRPC_LIBRARIES}
     )
 endif()
-
-target_link_libraries(
-    ${PROJECT_NAME}
-    ${SYSREPO_LIBRARIES}
-    ${LIBYANG_LIBRARIES}
-    ${SRPC_LIBRARIES}
-)
 
 include_directories(
     ${SYSREPO_INCLUDE_DIRS}
