@@ -19,7 +19,7 @@ class Walker(TreeWalker):
 
         last_prefix = self.ctx.prefix_stack[depth]
 
-        if node.nodetype() == LyNode.LEAF or node.nodetype() == LyNode.LEAFLIST:
+        if (node.nodetype() == LyNode.LEAF or node.nodetype() == LyNode.LEAFLIST) and node.config_false():
             self.ctx.callbacks.append(Callback(node.data_path(),
                                                to_c_variable(last_prefix + "_" + node.name())[1:]))
 
