@@ -16,18 +16,20 @@ class Walker(TreeWalker):
         self.ctx = OperationalContext()
 
     def walk_node(self, node, depth):
-        # print("\t" * depth, end="")
-        # print(self.ctx.prefix_stack)
-        # print("\t" * depth, end="")
-        # print("{}[{}]".format(node.name(), node.keyword()))
 
         last_prefix = self.ctx.prefix_stack[depth]
 
-        if node.nodetype() == LyNode.LEAF or node.nodetype() == LyNode.LEAFLIST or node.nodetype() == LyNode.LIST:
+        if node.nodetype() == LyNode.LEAF or node.nodetype() == LyNode.LEAFLIST:
             self.ctx.callbacks.append(Callback(node.data_path(),
                                                to_c_variable(last_prefix + "_" + node.name())[1:]))
 
-            return True
+            # return True
+        elif node.nodetype() == LyNode.LIST:
+            # also add optional list callback
+            self.ctx.callbacks.append(Callback(node.data_path(),
+                                               to_c_variable(last_prefix + "_" + node.name())[1:]))
+            self.ctx.prefix_stack[depth+1] = last_prefix + \
+                "_" + to_c_variable(node.name())
         else:
             self.ctx.prefix_stack[depth+1] = last_prefix + \
                 "_" + to_c_variable(node.name())
@@ -35,7 +37,7 @@ class Walker(TreeWalker):
         return False
 
     def add_node(self, node):
-        return not node.nodetype() == LyNode.RPC and not node.nodetype() == LyNode.NOTIF and node.config_false()
+        return not node.nodetype() == LyNode.RPC and not node.nodetype() == LyNode.NOTIF
 
     def get_callbacks(self):
         return list(reversed(self.ctx.callbacks))
