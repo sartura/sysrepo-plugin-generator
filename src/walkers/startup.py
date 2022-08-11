@@ -25,7 +25,7 @@ class Walker(TreeWalker):
         return depth > 0
 
     def add_node(self, node):
-        return not node.nodetype() == LyNode.RPC and not node.config_false() and not node.nodetype() == LyNode.NOTIF
+        return not node.nodetype() == LyNode.RPC and not node.nodetype() == LyNode.ACTION and not node.config_false() and not node.nodetype() == LyNode.NOTIF
 
     def get_callbacks(self):
         return self.ctx.callbacks

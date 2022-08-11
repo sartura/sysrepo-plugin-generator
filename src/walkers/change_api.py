@@ -104,7 +104,7 @@ class Walker(TreeWalker):
         return False
 
     def add_node(self, node):
-        return not node.config_false() and not node.nodetype() in [LyNode.RPC, LyNode.NOTIF]
+        return not node.config_false() and not node.nodetype() in [LyNode.RPC, LyNode.NOTIF, LyNode.ACTION]
 
     def get_directories(self):
         return self.ctx.dirs

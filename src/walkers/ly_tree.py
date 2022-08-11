@@ -51,7 +51,7 @@ class Walker(TreeWalker):
         return False
 
     def add_node(self, node):
-        return not node.nodetype() == LyNode.RPC
+        return not node.nodetype() == LyNode.RPC and not node.nodetype() == LyNode.ACTION
 
     def get_functions(self):
         return self.ctx.functions

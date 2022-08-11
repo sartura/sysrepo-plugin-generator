@@ -229,7 +229,7 @@ class Walker(TreeWalker):
         return super().walk_node(node, depth)
 
     def add_node(self, node):
-        return not node.nodetype() == LyNode.RPC and not node.config_false() and not node.nodetype() == LyNode.NOTIF
+        return not node.nodetype() == LyNode.RPC and not node.nodetype() == LyNode.ACTION and not node.config_false() and not node.nodetype() == LyNode.NOTIF
 
     def get_types_data(self):
         return self.ctx.types_data
