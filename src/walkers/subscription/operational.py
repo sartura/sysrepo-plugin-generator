@@ -37,7 +37,7 @@ class Walker(TreeWalker):
         return False
 
     def add_node(self, node):
-        return not node.nodetype() == LyNode.RPC and not node.nodetype() == LyNode.ACTION and not node.nodetype() == LyNode.NOTIF and node.status() is not 'obsolete'
+        return not node.nodetype() == LyNode.RPC and not node.nodetype() == LyNode.ACTION and not node.nodetype() == LyNode.NOTIF and node.status() is not 'obsolete' and node.status() is not 'deprecated'
 
     def get_callbacks(self):
         return list(reversed(self.ctx.callbacks))

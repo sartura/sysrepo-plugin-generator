@@ -22,6 +22,7 @@ class Generator:
         # load all needed modules
         for m in modules:
             self.ctx.load_module(m)
+            self.ctx.get_module(m).feature_enable_all()
 
         # use main module for plugin generation
         self.module = self.ctx.get_module(main_module)
@@ -40,6 +41,7 @@ class Generator:
         self.module.feature_enable_all()
 
         print("Loaded module %s:" % (self.module.name()))
+        print("All loaded modules: ", modules)
 
         if prefix is not None:
             self.prefix = prefix
@@ -92,23 +94,23 @@ class Generator:
         self.types_walker.ctx.structs.reverse()
 
         for s in self.types_walker.ctx.structs:
-            print("struct {}".format(s.name))
+            # print("struct {}".format(s.name))
             s.vars.reverse()
-            for v in s.vars:
-                print("\t {} {}".format(v.type, v.name))
-            print()
+            # for v in s.vars:
+            #     # print("\t {} {}".format(v.type, v.name))
+            # # print()
 
         self.types_walker.ctx.typedefs.reverse()
 
         for e in self.types_walker.ctx.enums:
-            print("enum {}:".format(e.name))
+            # print("enum {}:".format(e.name))
             e.values.reverse()
-            for v in e.values:
-                print("\t {}".format(v))
-            print()
+            # for v in e.values:
+            #     print("\t {}".format(v))
+            # print()
 
-        for t in self.types_walker.ctx.typedefs:
-            print("typedef {} {} {}".format(t.type, t.name, t.typedef))
+        # for t in self.types_walker.ctx.typedefs:
+        #     print("typedef {} {} {}".format(t.type, t.name, t.typedef))
 
     def generate_directories(self):
         deps_dir = os.path.join(self.outdir, "deps")

@@ -68,7 +68,7 @@ class Walker(TreeWalker):
         else:
             full_prefix = self.ctx.prefix
 
-        print("\t" * depth, end="")
+        # print("\t" * depth, end="")
         if node.nodetype() == LyNode.CONTAINER:
             self.ctx.prefix_stack[depth +
                                   1] = "{}_{}".format(full_prefix, node.name())
@@ -76,7 +76,7 @@ class Walker(TreeWalker):
                 "{}_{}".format(full_prefix, node.name()))
             var_name = to_c_variable(node.name())
 
-            print("struct {}:".format(struct_name))
+            # print("struct {}:".format(struct_name))
 
             td = Typedef("struct", struct_name)
             sd = StructDef(struct_name)
@@ -94,7 +94,7 @@ class Walker(TreeWalker):
                     VarDef(td.typedef, var_name, "struct"))
 
         elif node.nodetype() == LyNode.LEAF:
-            print("{} {}".format(node.type().basename(), node.name()))
+            # print("{} {}".format(node.type().basename(), node.name()))
             struct_name = to_c_variable(full_prefix)
 
             if node.type().basename() == "enumeration":
@@ -127,7 +127,7 @@ class Walker(TreeWalker):
             element_name = to_c_variable("{}_element".format(struct_name))
             element_var_name = var_name
 
-            print("struct {}:".format(struct_name))
+            # print("struct {}:".format(struct_name))
 
             # element
             element_td = Typedef("struct", element_name)
@@ -193,7 +193,7 @@ class Walker(TreeWalker):
             element_name = to_c_variable("{}_element".format(struct_name))
             element_var_name = to_c_variable(node.name())
 
-            print("struct {}:".format(struct_name))
+            # print("struct {}:".format(struct_name))
 
             # element
             element_td = Typedef("struct", element_name)
