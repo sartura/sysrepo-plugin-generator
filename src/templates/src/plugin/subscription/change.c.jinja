@@ -40,7 +40,7 @@ int {{plugin_prefix}}_subscription_change_{{cb.sufix}}(sr_session_ctx_t *session
 		}
 	} else if (event == SR_EV_CHANGE) {
 		// connect change API
-		error = srpc_iterate_changes(ctx, session, xpath, {{change_path_map[cb.path][0]}}_change_{{to_c_variable(change_path_map[cb.path][1].name())}});
+		error = srpc_iterate_changes(ctx, session, xpath, {{change_path_map[cb.path][0]}}_change_{{to_c_variable(change_path_map[cb.path][1].name())}}, {{change_path_map[cb.path][0]}}_change_{{to_c_variable(change_path_map[cb.path][1].name())}}_init, {{change_path_map[cb.path][0]}}_change_{{to_c_variable(change_path_map[cb.path][1].name())}}_free);
 		if (error) {
 			SRPLG_LOG_ERR(PLUGIN_NAME, "srpc_iterate_changes() for {{change_path_map[cb.path][0]}}_change_{{to_c_variable(change_path_map[cb.path][1].name())}} failed: %d", error);
 			goto error_out;

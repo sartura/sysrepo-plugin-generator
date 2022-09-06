@@ -15,6 +15,7 @@ from utils import extract_defines, to_c_variable
 class Generator:
     def __init__(self, prefix, outdir, modules, main_module, yang_dir):
         # self.prefix = prefix
+        print("Started generator")
         self.outdir = outdir
         self.source_dir = os.path.join(outdir, "src")
         self.ctx = libyang.Context(yang_dir)
