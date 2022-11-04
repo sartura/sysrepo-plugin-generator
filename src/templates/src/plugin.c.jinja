@@ -59,6 +59,7 @@ int sr_plugin_init_cb(sr_session_ctx_t *running_session, void **private_data)
 	srpc_operational_t oper[] = {
         {% for cb in oper_callbacks %}
         {
+			BASE_YANG_MODEL,
             {{defines_map[cb.path]}},
             {{plugin_prefix}}_subscription_operational_{{cb.sufix}},
         },
