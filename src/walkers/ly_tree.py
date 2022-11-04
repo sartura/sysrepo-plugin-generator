@@ -41,9 +41,9 @@ class Walker(TreeWalker):
         if node.nodetype() in [LyNode.CONTAINER, LyNode.LIST]:
             self.ctx.parent_stack[depth +
                                   1] = (node, parent_prefix + "_" + to_c_variable(node.name()))
-        # print("\t" * depth, end="")
-        # print("{}[{} - {}]".format(
-        #     to_c_variable(node.name()), node.keyword(), parent_prefix + "_" + to_c_variable(node.name())))
+        print("\t" * depth, end="")
+        print("{}[{} - {}]".format(
+            to_c_variable(node.name()), node.keyword(), parent_prefix + "_" + to_c_variable(node.name())))
 
         self.ctx.functions.append(LibyangTreeFunction(
             parent_prefix, parent, node))
@@ -51,7 +51,7 @@ class Walker(TreeWalker):
         return False
 
     def add_node(self, node):
-        return not node.nodetype() == LyNode.RPC and not node.nodetype() == LyNode.ACTION
+        return not node.nodetype() == LyNode.RPC and not node.nodetype() == LyNode.ACTION and not node.nodetype() == LyNode.NOTIF
 
     def get_functions(self):
         return self.ctx.functions
