@@ -22,6 +22,7 @@ from .walkers.api.store import StoreAPIWalker
 from .walkers.subscription.change import ChangeSubscriptionWalker
 from .walkers.subscription.operational import OperationalSubscriptionWalker
 from .walkers.subscription.rpc import RPCSubscriptionWalker
+from .walkers.api.base import APIWalker
 
 # datastore walkers
 from .walkers.running import RunningWalker
@@ -97,6 +98,10 @@ class CGenerator(Generator):
             self.prefix, self.module.children(), self.source_dir)
         self.check_api_walker = CheckAPIWalker(
             self.prefix, self.module.children(), self.source_dir)
+
+        # full API walker
+        self.api_walker = APIWalker(self.prefix, self.module.children(
+        ), self.source_dir, ['check', 'load', 'store', 'change'])
 
         # setup libraries
         self.libraries = [
@@ -211,7 +216,7 @@ class CGenerator(Generator):
         # generate files
         self.__generate_common_h()
         self.__generate_context_h()
-        self.__generate_types_h()
+        # self.__generate_types_h()
 
         # startup
         self.__generate_startup_load_h()
