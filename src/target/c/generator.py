@@ -4,7 +4,7 @@ import os
 import subprocess
 import shutil
 import jinja2
-from libraries.uthash import UTHashLibrary
+from .libraries.uthash import UTHashLibrary
 
 # core
 from core.generator import Generator
@@ -288,6 +288,11 @@ class CGenerator(Generator):
                              ly_tree_functions=self.ly_tree_walker.get_functions(), LyNode=LyNode)
         self.__generate_file("src/plugin/ly_tree.c",  plugin_prefix=self.prefix,
                              ly_tree_functions=self.ly_tree_walker.get_functions(), LyNode=LyNode)
+        for fn in self.ly_tree_walker.get_functions():
+            if fn.node.nodetype() == LyNode.LIST:
+
+                print(fn.node.keys())
+            # self.include_dirs.append(fn.get_include_dir())
 
     def __generate_datastore_files(self):
         self.__generate_file("src/plugin/startup/load.h",
@@ -325,7 +330,7 @@ class CGenerator(Generator):
         dir_functions = self.api_walker.get_directory_functions()
         files = self.api_walker.get_api_filenames()
         types = self.api_walker.get_types()
-        print(dir_functions)
+
         for dir in dirs:
             # generate all files in this directory
             prefix, node_list = dir_functions[dir]
@@ -397,7 +402,7 @@ class CGenerator(Generator):
         print("Applying .clang-format style")
         if shutil.which("clang-format") is not None:
             # copy the used clang-format file into the source directory and apply it to all generated files
-            src_path = "src/.clang-format"
+            src_path = "templates/common/.clang-format"
             dst_path = os.path.join(self.outdir, ".clang-format")
 
             shutil.copyfile(src_path, dst_path)

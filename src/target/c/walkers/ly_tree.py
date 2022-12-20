@@ -41,9 +41,9 @@ class LyTreeWalker(Walker):
         if node.nodetype() in [LyNode.CONTAINER, LyNode.LIST]:
             self.ctx.parent_stack[depth +
                                   1] = (node, parent_prefix + "_" + to_c_variable(node.name()))
-        print("\t" * depth, end="")
-        print("{}[{} - {}]".format(
-            to_c_variable(node.name()), node.keyword(), parent_prefix + "_" + to_c_variable(node.name())))
+        # print("\t" * depth, end="")
+        # print("{}[{} - {}]".format(
+        #     to_c_variable(node.name()), node.keyword(), parent_prefix + "_" + to_c_variable(node.name())))
 
         self.ctx.functions.append(LibyangTreeFunction(
             parent_prefix, parent, node))

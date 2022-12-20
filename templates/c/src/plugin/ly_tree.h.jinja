@@ -12,7 +12,14 @@ int {{fn.get_name()}}(const struct ly_ctx *ly_ctx, struct lyd_node **{{ fn.name 
     {% endif %}
     {% endif %}
     {% if fn.node.nodetype() == LyNode.LIST %}
-int {{fn.get_name()}}(const struct ly_ctx *ly_ctx, struct lyd_node *{{ fn.parent_name }}_node, struct lyd_node **{{ fn.name }}_node{% for key in fn.node.keys() %}, const char *{{key.name()}}{% endfor %});
+int {{fn.get_name()}}(
+        const struct ly_ctx *ly_ctx, 
+        struct lyd_node *{{ fn.parent_name }}_node, 
+        struct lyd_node **{{ fn.name }}_node
+        {% for key in fn.node.keys() %}
+            , const char *{{key.name()}}
+        {% endfor %}
+    );
     {% endif %}
     {% if fn.node.nodetype() == LyNode.LEAFLIST %}
 int {{fn.get_name()}}(const struct ly_ctx *ly_ctx, struct lyd_node *{{ fn.parent_name }}_node, const char *{{fn.name}});
