@@ -132,6 +132,7 @@ class CGenerator(Generator):
             self.load_api_walker,
             self.store_api_walker,
             self.check_api_walker,
+            self.api_walker
         ]
 
         # extract all data
@@ -324,6 +325,7 @@ class CGenerator(Generator):
         dir_functions = self.api_walker.get_directory_functions()
         files = self.api_walker.get_api_filenames()
         types = self.api_walker.get_types()
+        print(dir_functions)
         for dir in dirs:
             # generate all files in this directory
             prefix, node_list = dir_functions[dir]
