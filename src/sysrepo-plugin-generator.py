@@ -1,5 +1,7 @@
 import argparse
 from generator import Generator
+from generators.c_generator import CGenerator
+from generators.cpp_generator import CPPGenerator
 
 # setup args
 arg_parser = argparse.ArgumentParser(description="Sysrepo plugin generator.")
@@ -17,12 +19,21 @@ arg_parser.add_argument("-l", "--lang", type=str, dest="lang", required=True,
                         help="Destination language to generate to (C or C++).")
 args = arg_parser.parse_args()
 
-# generate plugin structure
-generator = Generator(args.prefix, args.outdir,
-                      args.modules, args.main_module, args.dir)
+generator = None
 
-# generate directory structure
+# depending on the target language - choose which generator to use
+if args.lang == "C":
+    generator = CGenerator(args.prefix, args.outdir,
+                           args.modules, args.main_module, args.dir)
+elif args.lang == "C++":
+    generator = CPPGenerator(args.prefix, args.outdir,
+                             args.modules, args.main_module, args.dir)
+else:
+    print("Unsupported language: " + args.lang)
+    exit(1)
+
+# generate project directory structure
 generator.generate_directories()
 
-# generate all files
+# generate all project files
 generator.generate_files()

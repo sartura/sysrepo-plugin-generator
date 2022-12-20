@@ -2,7 +2,7 @@ from typing import List
 from tree_walker import TreeWalker
 from libyang.schema import Node as LyNode
 
-from utils import to_c_variable
+from core.utils import to_c_variable
 
 
 class Typedef:

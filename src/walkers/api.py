@@ -2,7 +2,7 @@ from tree_walker import TreeWalker
 import os
 from libyang.schema import Node as LyNode
 
-from utils import to_c_variable
+from core.utils import to_c_variable
 
 
 class APIContext:

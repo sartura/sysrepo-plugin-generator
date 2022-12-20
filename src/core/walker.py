@@ -1,7 +1,7 @@
 from core.utils import has_children
 
 
-class TreeWalker:
+class Walker:
     def __init__(self, root_nodes):
         self.root_nodes = root_nodes
 

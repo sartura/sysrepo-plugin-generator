@@ -12,7 +12,7 @@ from walkers import change_api
 from core.utils import extract_defines, to_c_variable
 
 
-class Generator:
+class CGenerator:
     def __init__(self, prefix, outdir, modules, main_module, yang_dir):
         # self.prefix = prefix
         print("Started generator")
