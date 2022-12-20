@@ -13,6 +13,8 @@ arg_parser.add_argument("-M", "--main-module", type=str, dest="main_module", req
                         help="Main YANG module to use for plugin generation.")
 arg_parser.add_argument("-o", "--outdir", type=str, dest="outdir", required=True,
                         help="Output source directory to use.")
+arg_parser.add_argument("-l", "--lang", type=str, dest="lang", required=True,
+                        help="Destination language to generate to (C or C++).")
 args = arg_parser.parse_args()
 
 # generate plugin structure
