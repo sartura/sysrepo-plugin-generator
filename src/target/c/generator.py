@@ -56,6 +56,10 @@ class CGenerator(Generator):
             lstrip_blocks=True
         )
 
+        # extract defines from module
+        self.defines, self.defines_map = extract_defines(
+            self.prefix, self.module)
+
         # append the path to the file once generated - at the end used with CMakeLists.txt
         self.generated_files = []
         self.include_dirs = ["src"]
@@ -213,37 +217,23 @@ class CGenerator(Generator):
         # copy cmake modules
         self.__generate_cmake_files()
 
-        # generate files
-        self.__generate_common_h()
-        self.__generate_context_h()
-        # self.__generate_types_h()
+        # plugin.h, plugin.c and main.c
+        self.__generate_plugin_files()
 
-        # startup
-        self.__generate_startup_load_h()
-        self.__generate_startup_load_c()
-        self.__generate_startup_store_h()
-        self.__generate_startup_store_c()
+        # common plugin files - common, ly_tree, types, context
+        self.__generate_common_files()
 
-        # subscription
-        self.__generate_subscription_change_h()
-        self.__generate_subscription_change_c()
-        self.__generate_subscription_operational_h()
-        self.__generate_subscription_operational_c()
-        self.__generate_subscription_rpc_h()
-        self.__generate_subscription_rpc_c()
+        # running and startup DS files
+        self.__generate_datastore_files()
 
-        # ly_tree
-        self.__generate_ly_tree_h()
-        self.__generate_ly_tree_c()
+        # subscription - change, operational, rpc
+        self.__generate_subscription_files()
 
-        # API and data files
+        # API - load, store, check, change
         self.__generate_api_files()
-        self.__generate_data_files()
 
-        # main files
-        self.__generate_plugin_h()
-        self.__generate_plugin_c()
-        self.__generate_main_c()
+        # plugin internal data structure functions headers and sources
+        self.__generate_data_files()
 
         # generate library files
         for lib in self.libraries:
@@ -261,40 +251,30 @@ class CGenerator(Generator):
         # apply style
         self.__apply_clang_format()
 
-    def __generate_file(self, file, **kwargs):
-        template = self.jinja_env.get_template("{}.jinja".format(file))
+    def __generate_plugin_files(self):
 
-        # generate #def's
-        self.defines, self.defines_map = extract_defines(
-            self.prefix, self.module)
+        self.__generate_file("src/plugin.h", plugin_prefix=self.prefix, module=self.module.name(),
+                             defines=self.defines)
 
-        path = os.path.join(self.outdir, file)
-        self.generated_files.append(file)
-        print("Generating {}".format(path))
+        self.__generate_file("src/plugin.c", plugin_prefix=self.prefix, module=self.module.name(),
+                             rpc_callbacks=self.rpc_walker.get_callbacks(),
+                             oper_callbacks=self.operational_walker.get_callbacks(),
+                             change_callbacks=self.change_walker.get_callbacks(),
+                             defines_map=self.defines_map
+                             )
 
-        with open(path, "w") as file:
-            file.write(template.render(kwargs))
+        self.__generate_file(
+            "src/main.c", plugin_prefix=self.prefix, module=self.module.name())
 
-    def __generate_cmake_files(self):
-        modules_input_dir = "templates/common/CMakeModules"
-        modules_output_dir = os.path.join(self.outdir, "CMakeModules")
-
-        for module in os.listdir(modules_input_dir):
-            src_path = os.path.join(modules_input_dir, module)
-            dst_path = os.path.join(modules_output_dir, module)
-
-            shutil.copyfile(src_path, dst_path)
-
-    def __generate_common_h(self):
-        self.defines, self.defines_map = extract_defines(
-            self.prefix, self.module)
+    def __generate_common_files(self):
+        # common.h
         self.__generate_file("src/plugin/common.h", plugin_prefix=self.prefix, module=self.module.name(),
                              defines=self.defines)
 
-    def __generate_context_h(self):
+        # context.h
         self.__generate_file("src/plugin/context.h", plugin_prefix=self.prefix)
 
-    def __generate_types_h(self):
+        # types.h
         self.__generate_file("src/plugin/types.h", plugin_prefix=self.prefix,
                              structs=self.types_walker.ctx.structs,
                              enums=self.types_walker.ctx.enums,
@@ -302,27 +282,25 @@ class CGenerator(Generator):
                              typedefs=self.types_walker.ctx.typedefs,
                              types=self.api_walker.get_types())
 
-    def __generate_startup_load_h(self):
+        # ly_tree
+        self.__generate_file("src/plugin/ly_tree.h",  plugin_prefix=self.prefix,
+                             ly_tree_functions=self.ly_tree_walker.get_functions(), LyNode=LyNode)
+        self.__generate_file("src/plugin/ly_tree.c",  plugin_prefix=self.prefix,
+                             ly_tree_functions=self.ly_tree_walker.get_functions(), LyNode=LyNode)
+
+    def __generate_datastore_files(self):
         self.__generate_file("src/plugin/startup/load.h",
                              plugin_prefix=self.prefix)
-
-    def __generate_startup_load_c(self):
         self.__generate_file("src/plugin/startup/load.c", plugin_prefix=self.prefix,
                              load_callbacks=self.startup_walker.get_callbacks())
-
-    def __generate_startup_store_h(self):
         self.__generate_file("src/plugin/startup/store.h",
                              plugin_prefix=self.prefix)
-
-    def __generate_startup_store_c(self):
         self.__generate_file("src/plugin/startup/store.c", plugin_prefix=self.prefix,
                              store_callbacks=self.startup_walker.get_callbacks())
 
-    def __generate_subscription_change_h(self):
+    def __generate_subscription_files(self):
         self.__generate_file("src/plugin/subscription/change.h", plugin_prefix=self.prefix,
                              change_callbacks=self.change_walker.get_callbacks())
-
-    def __generate_subscription_change_c(self):
         self.__generate_file("src/plugin/subscription/change.c",
                              plugin_prefix=self.prefix,
                              change_callbacks=self.change_walker.get_callbacks(),
@@ -330,29 +308,15 @@ class CGenerator(Generator):
                              to_c_variable=to_c_variable,
                              dir_functions=self.change_api_walker.get_directory_functions())
 
-    def __generate_subscription_operational_h(self):
         self.__generate_file("src/plugin/subscription/operational.h", plugin_prefix=self.prefix,
                              oper_callbacks=self.operational_walker.get_callbacks())
-
-    def __generate_subscription_operational_c(self):
         self.__generate_file("src/plugin/subscription/operational.c", plugin_prefix=self.prefix,
                              oper_callbacks=self.operational_walker.get_callbacks())
 
-    def __generate_subscription_rpc_h(self):
         self.__generate_file("src/plugin/subscription/rpc.h", plugin_prefix=self.prefix,
                              rpc_callbacks=self.rpc_walker.get_callbacks())
-
-    def __generate_subscription_rpc_c(self):
         self.__generate_file("src/plugin/subscription/rpc.c", plugin_prefix=self.prefix,
                              rpc_callbacks=self.rpc_walker.get_callbacks())
-
-    def __generate_ly_tree_h(self):
-        self.__generate_file("src/plugin/ly_tree.h",  plugin_prefix=self.prefix,
-                             ly_tree_functions=self.ly_tree_walker.get_functions(), LyNode=LyNode)
-
-    def __generate_ly_tree_c(self):
-        self.__generate_file("src/plugin/ly_tree.c",  plugin_prefix=self.prefix,
-                             ly_tree_functions=self.ly_tree_walker.get_functions(), LyNode=LyNode)
 
     def __generate_api_files(self):
         print("Generating API files:")
@@ -363,6 +327,7 @@ class CGenerator(Generator):
         for dir in dirs:
             # generate all files in this directory
             prefix, node_list = dir_functions[dir]
+
             for file in files:
                 path = os.path.join(dir, file)
                 print("\tGenerating {}".format(path))
@@ -396,21 +361,29 @@ class CGenerator(Generator):
     def __generate_data_files(self):
         pass
 
-    def __generate_plugin_h(self):
-        self.__generate_file("src/plugin.h", plugin_prefix=self.prefix, module=self.module.name(),
-                             defines=self.defines)
+    def __generate_file(self, file, **kwargs):
+        template = self.jinja_env.get_template("{}.jinja".format(file))
 
-    def __generate_plugin_c(self):
-        self.__generate_file("src/plugin.c", plugin_prefix=self.prefix, module=self.module.name(),
-                             rpc_callbacks=self.rpc_walker.get_callbacks(),
-                             oper_callbacks=self.operational_walker.get_callbacks(),
-                             change_callbacks=self.change_walker.get_callbacks(),
-                             defines_map=self.defines_map
-                             )
+        # generate #def's
+        self.defines, self.defines_map = extract_defines(
+            self.prefix, self.module)
 
-    def __generate_main_c(self):
-        self.__generate_file(
-            "src/main.c", plugin_prefix=self.prefix, module=self.module.name())
+        path = os.path.join(self.outdir, file)
+        self.generated_files.append(file)
+        print("Generating {}".format(path))
+
+        with open(path, "w") as file:
+            file.write(template.render(kwargs))
+
+    def __generate_cmake_files(self):
+        modules_input_dir = "templates/common/CMakeModules"
+        modules_output_dir = os.path.join(self.outdir, "CMakeModules")
+
+        for module in os.listdir(modules_input_dir):
+            src_path = os.path.join(modules_input_dir, module)
+            dst_path = os.path.join(modules_output_dir, module)
+
+            shutil.copyfile(src_path, dst_path)
 
     def __generate_cmake_lists(self):
         self.__generate_file(
