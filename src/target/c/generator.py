@@ -5,6 +5,26 @@ import subprocess
 import shutil
 import jinja2
 from libraries.uthash import UTHashLibrary
+
+# import all walkers
+
+# API walkers
+from .walkers.api.change import ChangeApiWalker
+from .walkers.api.check import CheckApiWalker
+from .walkers.api.load import LoadApiWalker
+from .walkers.api.store import StoreApiWalker
+
+# subscription walkers
+from .walkers.subscription.change import ChangeSubscriptionWalker
+
+# datastore walkers
+from .walkers.running import RunningWalker
+from .walkers.startup import StartupWalker
+
+# other walkers
+from .walkers.ly_tree import LyTreeWalker
+from .walkers.types import TypesWalker
+
 from .walkers import startup, ly_tree, api, types
 from .walkers.subscription import rpc, change, operational
 from .walkers import change_api
@@ -51,7 +71,7 @@ class CGenerator(Generator):
         else:
             self.prefix = self.module.prefix()
 
-            # setup walkers
+        # setup walkers
         self.ly_tree_walker = ly_tree.Walker(
             self.prefix, self.module.children())
         self.startup_walker = startup.Walker(
