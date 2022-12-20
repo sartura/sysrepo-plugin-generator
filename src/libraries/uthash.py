@@ -1,4 +1,4 @@
-from library import CLibrary
+from core.utils import CLibrary
 import os
 import shutil
 
@@ -13,7 +13,7 @@ class UTHashLibrary(CLibrary):
 
     def generate_files(self):
         # copy files from deps/uthash/src
-        uthash_source = "src/deps/uthash/src"
+        uthash_source = "deps/uthash/src"
 
         for file in os.listdir(uthash_source):
             src_path = os.path.join(uthash_source, file)
