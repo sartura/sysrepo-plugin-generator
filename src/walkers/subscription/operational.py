@@ -1,6 +1,6 @@
 from tree_walker import TreeWalker
 from libyang.schema import Node as LyNode
-from callback import Callback
+from core.utils import Callback
 from core.utils import to_c_variable
 
 
