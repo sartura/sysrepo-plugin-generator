@@ -1,7 +1,7 @@
 import argparse
 from generator import Generator
-from generators.c_generator import CGenerator
-from generators.cpp_generator import CPPGenerator
+from target.c.generator import CGenerator
+from target.cpp.generator import CPPGenerator
 
 # setup args
 arg_parser = argparse.ArgumentParser(description="Sysrepo plugin generator.")
@@ -34,6 +34,9 @@ else:
 
 # generate project directory structure
 generator.generate_directories()
+
+# copy files which do not need generation
+generator.copy_files()
 
 # generate all project files
 generator.generate_files()

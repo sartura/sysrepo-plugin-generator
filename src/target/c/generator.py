@@ -8,15 +8,17 @@ from libraries.uthash import UTHashLibrary
 from walkers import startup, ly_tree, api, types
 from walkers.subscription import rpc, change, operational
 from walkers import change_api
+from core.generator import Generator
 
 from core.utils import extract_defines, to_c_variable
 
 
-class CGenerator:
+class CGenerator(Generator):
     def __init__(self, prefix, outdir, modules, main_module, yang_dir):
-        # self.prefix = prefix
+        super.__init__(prefix, outdir, modules, main_module, yang_dir)
+
         print("Started generator")
-        self.outdir = outdir
+
         self.source_dir = os.path.join(outdir, "src")
         self.ctx = libyang.Context(yang_dir)
 
