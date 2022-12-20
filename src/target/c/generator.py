@@ -6,16 +6,22 @@ import shutil
 import jinja2
 from libraries.uthash import UTHashLibrary
 
+# core
+from core.generator import Generator
+from core.utils import extract_defines, to_c_variable
+
 # import all walkers
 
 # API walkers
-from .walkers.api.change import ChangeApiWalker
-from .walkers.api.check import CheckApiWalker
-from .walkers.api.load import LoadApiWalker
-from .walkers.api.store import StoreApiWalker
+from .walkers.api.change import ChangeAPIWalker
+from .walkers.api.check import CheckAPIWalker
+from .walkers.api.load import LoadAPIWalker
+from .walkers.api.store import StoreAPIWalker
 
 # subscription walkers
 from .walkers.subscription.change import ChangeSubscriptionWalker
+from .walkers.subscription.operational import OperationalSubscriptionWalker
+from .walkers.subscription.rpc import RPCSubscriptionWalker
 
 # datastore walkers
 from .walkers.running import RunningWalker
@@ -25,17 +31,10 @@ from .walkers.startup import StartupWalker
 from .walkers.ly_tree import LyTreeWalker
 from .walkers.types import TypesWalker
 
-from .walkers import startup, ly_tree, api, types
-from .walkers.subscription import rpc, change, operational
-from .walkers import change_api
-from core.generator import Generator
-
-from core.utils import extract_defines, to_c_variable
-
 
 class CGenerator(Generator):
     def __init__(self, prefix, outdir, modules, main_module, yang_dir):
-        super.__init__(prefix, outdir, modules, main_module, yang_dir)
+        super().__init__(prefix, outdir, modules, main_module, yang_dir)
 
         print("Started generator")
 
@@ -72,23 +71,34 @@ class CGenerator(Generator):
             self.prefix = self.module.prefix()
 
         # setup walkers
-        self.ly_tree_walker = ly_tree.Walker(
-            self.prefix, self.module.children())
-        self.startup_walker = startup.Walker(
-            self.prefix, self.module.children())
-        self.rpc_walker = rpc.Walker(
-            self.prefix, self.module.children())
-        self.change_walker = change.Walker(self.prefix, self.module.children())
-        self.operational_walker = operational.Walker(
-            self.prefix, self.module.children())
-        self.api_walker = api.Walker(
-            self.prefix, self.module.children(), self.source_dir)
-        self.change_api_walker = change_api.Walker(
-            self.prefix, self.module.children(), self.source_dir)
+        self.ly_tree_walker = LyTreeWalker(self.prefix, self.module.children())
+        self.types_walker = TypesWalker(self.prefix, self.module.children())
 
-        self.types_walker = types.Walker(
+        # datastore walkers
+        self.startup_walker = StartupWalker(
+            self.prefix, self.module.children())
+        self.running_walker = RunningWalker(
             self.prefix, self.module.children())
 
+        # subscription walkers
+        self.change_walker = ChangeSubscriptionWalker(
+            self.prefix, self.module.children())
+        self.operational_walker = OperationalSubscriptionWalker(
+            self.prefix, self.module.children())
+        self.rpc_walker = RPCSubscriptionWalker(
+            self.prefix, self.module.children())
+
+        # API walkers
+        self.change_api_walker = ChangeAPIWalker(
+            self.prefix, self.module.children(), self.source_dir)
+        self.load_api_walker = LoadAPIWalker(
+            self.prefix, self.module.children(), self.source_dir)
+        self.store_api_walker = StoreAPIWalker(
+            self.prefix, self.module.children(), self.source_dir)
+        self.check_api_walker = CheckAPIWalker(
+            self.prefix, self.module.children(), self.source_dir)
+
+        # setup libraries
         self.libraries = [
             UTHashLibrary(self.outdir),
         ]
@@ -97,17 +107,22 @@ class CGenerator(Generator):
         all_walkers = [
             # base
             self.ly_tree_walker,
-            self.startup_walker,
             self.types_walker,
 
+            # datastore
+            self.startup_walker,
+            self.running_walker,
+
             # subscription
-            self.rpc_walker,
             self.change_walker,
             self.operational_walker,
+            self.rpc_walker,
 
             # API
-            self.api_walker,
             self.change_api_walker,
+            self.load_api_walker,
+            self.store_api_walker,
+            self.check_api_walker,
         ]
 
         # extract all data
@@ -162,15 +177,27 @@ class CGenerator(Generator):
             lib.generate_directories()
 
     def __generate_api_dirs(self):
-        dirs = self.api_walker.get_directories()
-
-        for dir in dirs:
+        # load
+        load_dirs = self.load_api_walker.get_directories()
+        for dir in load_dirs:
             if not os.path.exists(dir):
                 os.mkdir(dir)
 
-        dirs = self.change_api_walker.get_directories()
+        # store
+        store_dirs = self.store_api_walker.get_directories()
+        for dir in store_dirs:
+            if not os.path.exists(dir):
+                os.mkdir(dir)
 
-        for dir in dirs:
+        # check
+        check_dirs = self.check_api_walker.get_directories()
+        for dir in check_dirs:
+            if not os.path.exists(dir):
+                os.mkdir(dir)
+
+        # change
+        change_dirs = self.change_api_walker.get_directories()
+        for dir in change_dirs:
             if not os.path.exists(dir):
                 os.mkdir(dir)
 
@@ -244,7 +271,7 @@ class CGenerator(Generator):
             file.write(template.render(kwargs))
 
     def __generate_cmake_files(self):
-        modules_input_dir = "src/CMakeModules"
+        modules_input_dir = "templates/common/CMakeModules"
         modules_output_dir = os.path.join(self.outdir, "CMakeModules")
 
         for module in os.listdir(modules_input_dir):

@@ -6,11 +6,11 @@ class Generator:
         self.main_module = main_module
         self.yang_dir = yang_dir
 
-    def generate_directories():
+    def generate_directories(self):
         pass
 
-    def copy_files():
+    def copy_files(self):
         pass
 
-    def generate_files():
+    def generate_files(self):
         pass
