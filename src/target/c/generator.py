@@ -5,9 +5,9 @@ import subprocess
 import shutil
 import jinja2
 from libraries.uthash import UTHashLibrary
-from walkers import startup, ly_tree, api, types
-from walkers.subscription import rpc, change, operational
-from walkers import change_api
+from .walkers import startup, ly_tree, api, types
+from .walkers.subscription import rpc, change, operational
+from .walkers import change_api
 from core.generator import Generator
 
 from core.utils import extract_defines, to_c_variable

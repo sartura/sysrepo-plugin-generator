@@ -1,5 +1,4 @@
 import argparse
-from generator import Generator
 from target.c.generator import CGenerator
 from target.cpp.generator import CPPGenerator
 
