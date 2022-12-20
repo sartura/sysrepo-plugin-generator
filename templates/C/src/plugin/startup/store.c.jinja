@@ -1,0 +1,62 @@
+#include "store.h"
+#include "plugin/common.h"
+
+#include <libyang/libyang.h>
+#include <sysrepo.h>
+#include <srpc.h>
+
+{% for cb in store_callbacks %}
+static int {{plugin_prefix}}_startup_store_{{cb.sufix}}(void *priv, const struct lyd_node *parent_container);
+{% endfor %}
+
+int {{plugin_prefix}}_startup_store({{plugin_prefix}}_ctx_t *ctx, sr_session_ctx_t *session)
+{
+	int error = 0;
+	sr_data_t *subtree = NULL;
+
+	error = sr_get_subtree(session, "[ENTER_ROOT_CONFIG_PATH]", 0, &subtree);
+	if (error) {
+		SRPLG_LOG_ERR(PLUGIN_NAME, "sr_get_subtree() error (%d): %s", error, sr_strerror(error));
+		goto error_out;
+	}
+
+	srpc_startup_store_t store_values[] = {
+		{% for cb in store_callbacks %}
+		{
+			"{{cb.path}}",
+			{{plugin_prefix}}_startup_store_{{cb.sufix}},
+		},
+		{% endfor %}
+	};
+
+	for (size_t i = 0; i < ARRAY_SIZE(store_values); i++) {
+		const srpc_startup_store_t *store = &store_values[i];
+
+		error = store->cb(ctx, subtree->tree);
+		if (error != 0) {
+			SRPLG_LOG_ERR(PLUGIN_NAME, "Startup store callback failed for value %s", store->name);
+			goto error_out;
+		}
+	}
+
+	goto out;
+
+error_out:
+	error = -1;
+
+out:
+	if (subtree) {
+		sr_release_data(subtree);
+	}
+
+	return error;
+}
+
+{% for cb in store_callbacks %}
+static int {{plugin_prefix}}_startup_store_{{cb.sufix}}(void *priv, const struct lyd_node *parent_container)
+{
+	int error = 0;
+	return error;
+}
+
+{% endfor %}

@@ -1,0 +1,25 @@
+#ifndef {{plugin_prefix.upper()}}_PLUGIN_LY_TREE_H
+#define {{plugin_prefix.upper()}}_PLUGIN_LY_TREE_H
+
+#include <libyang/libyang.h>
+
+{% for fn in ly_tree_functions %}
+    {% if fn.node.nodetype() == LyNode.CONTAINER %}
+    {% if fn.parent_node %}
+int {{fn.get_name()}}(const struct ly_ctx *ly_ctx, struct lyd_node *{{ fn.parent_name }}_node, struct lyd_node **{{ fn.name }}_node);
+    {% else %}
+int {{fn.get_name()}}(const struct ly_ctx *ly_ctx, struct lyd_node **{{ fn.name }}_node);
+    {% endif %}
+    {% endif %}
+    {% if fn.node.nodetype() == LyNode.LIST %}
+int {{fn.get_name()}}(const struct ly_ctx *ly_ctx, struct lyd_node *{{ fn.parent_name }}_node, struct lyd_node **{{ fn.name }}_node{% for key in fn.node.keys() %}, const char *{{key.name()}}{% endfor %});
+    {% endif %}
+    {% if fn.node.nodetype() == LyNode.LEAFLIST %}
+int {{fn.get_name()}}(const struct ly_ctx *ly_ctx, struct lyd_node *{{ fn.parent_name }}_node, const char *{{fn.name}});
+    {% endif %}
+    {% if fn.node.nodetype() == LyNode.LEAF %}
+int {{fn.get_name()}}(const struct ly_ctx *ly_ctx, struct lyd_node *{{ fn.parent_name }}_node, const char *{{fn.name}});
+    {% endif %}
+{% endfor %}
+
+#endif // {{plugin_prefix.upper()}}_PLUGIN_LY_TREE_H
