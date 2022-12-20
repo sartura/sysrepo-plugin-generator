@@ -49,7 +49,7 @@ class CGenerator(Generator):
         # use main module for plugin generation
         self.module = self.ctx.get_module(main_module)
         self.jinja_env = jinja2.Environment(
-            loader=jinja2.FileSystemLoader("templates/C/"),
+            loader=jinja2.FileSystemLoader("templates/c/"),
             autoescape=jinja2.select_autoescape(),
             trim_blocks=True,
             lstrip_blocks=True
