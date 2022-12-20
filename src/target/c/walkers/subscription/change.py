@@ -1,4 +1,3 @@
-from tree_walker import TreeWalker
 from libyang.schema import Node as LyNode
 
 from core.utils import Callback
