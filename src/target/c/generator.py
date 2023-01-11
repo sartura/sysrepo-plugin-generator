@@ -124,7 +124,7 @@ class CGenerator(Generator):
         debug_handler = logging.StreamHandler()
         debug_handler.setLevel(logging.DEBUG)
         debug_formatter = logging.Formatter(
-            '[%(levelname)s][%(name)s][%(filename)s:%(lineno)s]: %(message)s')
+            '[%(levelname)s][%(name)s][%(pathname)s:%(lineno)s]: %(message)s')
         debug_handler.setFormatter(debug_formatter)
         debug_handler.addFilter(DebugLevelFilter())
         self.logger.addHandler(debug_handler)
@@ -171,7 +171,8 @@ class CGenerator(Generator):
         self.module.feature_enable_all()
 
         self.logger.info("Loaded module {}".format((self.module.name())))
-        self.logger.debug("All loaded modules: {}".format(modules))
+        self.logger.debug(
+            "All modules loaded into the libyang context: {}".format(modules))
 
         if prefix is not None:
             self.prefix = prefix
@@ -218,50 +219,36 @@ class CGenerator(Generator):
         # add all walkers to the list for easier extraction
         all_walkers = [
             # base
-            self.ly_tree_walker,
+            # self.ly_tree_walker,
             self.types_walker,
 
             # datastore
-            self.startup_walker,
-            self.running_walker,
+            # self.startup_walker,
+            # self.running_walker,
 
             # subscription
-            self.change_walker,
-            self.operational_walker,
-            self.rpc_walker,
+            # self.change_walker,
+            # self.operational_walker,
+            # self.rpc_walker,
 
             # API
-            self.change_api_walker,
-            self.load_api_walker,
-            self.store_api_walker,
-            self.check_api_walker,
-            self.api_walker
+            # self.change_api_walker,
+            # self.load_api_walker,
+            # self.store_api_walker,
+            # self.check_api_walker,
+            # self.api_walker
         ]
 
         # extract all data
         for walker in all_walkers:
             walker.walk()
 
-        self.types_walker.ctx.structs.reverse()
+        for sd in self.types_walker.ctx.structs:
+            print("struct {}".format(sd.get_name()))
+            for vd in sd.get_vars():
+                print("  {} {};".format(vd.get_type(), vd.get_name()))
 
-        for s in self.types_walker.ctx.structs:
-            # print("struct {}".format(s.name))
-            s.vars.reverse()
-            # for v in s.vars:
-            #     # print("\t {} {}".format(v.type, v.name))
-            # # print()
-
-        self.types_walker.ctx.typedefs.reverse()
-
-        for e in self.types_walker.ctx.enums:
-            # print("enum {}:".format(e.name))
-            e.values.reverse()
-            # for v in e.values:
-            #     print("\t {}".format(v))
-            # print()
-
-        # for t in self.types_walker.ctx.typedefs:
-        #     print("typedef {} {} {}".format(t.type, t.name, t.typedef))
+        # print(self.types_walker.ctx.structs)
 
     def generate_directories(self):
         deps_dir = os.path.join(self.outdir, "deps")

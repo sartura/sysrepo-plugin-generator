@@ -31,11 +31,11 @@ else:
     print("Unsupported language: " + args.lang)
     exit(1)
 
-# generate project directory structure
-generator.generate_directories()
+# # generate project directory structure
+# generator.generate_directories()
 
-# copy files which do not need generation
-generator.copy_files()
+# # copy files which do not need generation
+# generator.copy_files()
 
-# generate all project files
-generator.generate_files()
+# # generate all project files
+# generator.generate_files()
