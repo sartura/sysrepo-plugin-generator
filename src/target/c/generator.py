@@ -75,7 +75,12 @@ class CGenerator(Generator):
 
     Methods
     -------
-
+    generate_directories()
+        Generate project directory structure.
+    copy_files()
+        Copy files which do not need generation.
+    generate_files()
+        Generate plugin files.
     """
 
     # walkers
