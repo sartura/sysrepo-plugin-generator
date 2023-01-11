@@ -41,6 +41,44 @@ from .walkers.types import TypesWalker
 
 
 class CGenerator(Generator):
+    """
+    C sysrepo plugin generator.
+
+    Attributes
+    ----------
+    ly_tree_walker : LyTreeWalker
+        Libyang tree walker.
+    types_walker : TypesWalker
+        Used for generating types for the plugin.
+    startup_walker : StartupWalker
+        Used for generating startup datastore load/store functionality.
+    running_walker : RunningWalker
+        Used for generating running datastore load/store functionality.
+    change_walker : ChangeSubscriptionWalker
+        Used for generating change subscription functionality.
+    operational_walker : OperationalSubscriptionWalker
+        Used for generating operational subscription functionality.
+    rpc_walker : RPCSubscriptionWalker
+        Used for generating RPC subscription functionality.
+    change_api_walker : ChangeAPIWalker
+        Used for generating change API functionality.
+    check_api_walker : CheckAPIWalker
+        Used for generating check API functionality.
+    load_api_walker : LoadAPIWalker
+        Used for generating load API functionality.
+    store_api_walker : StoreAPIWalker
+        Used for generating store API functionality.
+    api_walker : APIWalker
+        Used for generating whole API functionality.
+    logger : logging.Logger
+        Logger for the generator.
+
+    Methods
+    -------
+
+    """
+
+    # walkers
     ly_tree_walker: LyTreeWalker
     types_walker: TypesWalker
     startup_walker: StartupWalker
@@ -52,10 +90,27 @@ class CGenerator(Generator):
     check_api_walker: CheckAPIWalker
     load_api_walker: LoadAPIWalker
     store_api_walker: StoreAPIWalker
+    api_walker: APIWalker
 
+    # logger
     logger: logging.Logger
 
     def __init__(self, prefix: str, outdir: str, modules: List[str], main_module: str, yang_dir: str):
+        """
+        Parameters
+        ----------
+        prefix : str
+            Prefix for the plugin.
+        outdir : str
+            Output directory for the plugin.
+        modules : List[str]
+            List of modules to be used for the plugin.
+        main_module : str
+            Main module for the plugin.
+        yang_dir : str
+            Path to the directory with YANG modules.
+        """
+
         # setup logger for the generator
         self.logger = logging.getLogger("CGenerator")
         self.logger.setLevel(logging.DEBUG)
@@ -69,6 +124,7 @@ class CGenerator(Generator):
         debug_handler.addFilter(DebugLevelFilter())
         self.logger.addHandler(debug_handler)
 
+        # Info level handler
         info_handler = logging.StreamHandler()
         info_handler.setLevel(logging.INFO)
         info_formatter = logging.Formatter(
