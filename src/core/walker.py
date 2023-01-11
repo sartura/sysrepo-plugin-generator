@@ -1,5 +1,9 @@
 from core.utils import has_children
 
+from typing import Iterator, List, Tuple
+
+from libyang.schema import SNode
+
 
 class Walker:
     """
@@ -15,17 +19,38 @@ class Walker:
         Walks the tree.
     """
 
-    def __init__(self, root_nodes):
+    def __init__(self, root_nodes: Iterator[SNode]):
+        """
+        Parameters
+        ----------
+        root_nodes : Iterator[SNode]
+            Iterator of root nodes.
+        """
+
         self.root_nodes = root_nodes
 
-    def walk_node(self, node, depth):
+    def walk_node(self, node: SNode, depth: int):
+        """
+        Parameters
+        ----------
+        node : SNode
+            Current node.
+        depth : int
+            Tree depth.
+        """
         pass
 
-    def add_node(self, node):
+    def add_node(self, node: SNode):
+        """
+        Parameters
+        ----------
+        node : SNode
+            Node which can be appended to the stack.
+        """
         pass
 
     def walk(self):
-        node_stack = []
+        node_stack: List[Tuple[SNode, int]] = []
 
         for n in self.root_nodes:
             if self.add_node(n):
