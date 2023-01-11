@@ -1,0 +1,9 @@
+[generator]
+prefix = "ietf_if"
+
+[yang.modules]
+main = "ietf-interfaces"
+other = ["ietf-ip"]
+
+[yang.types]
+identityref = "char *"

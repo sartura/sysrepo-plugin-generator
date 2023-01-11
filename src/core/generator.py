@@ -1,3 +1,8 @@
+from typing import Dict, Any
+
+from core.config import GeneratorConfiguration
+
+
 class Generator:
     """
     Base class for all generators.
@@ -12,12 +17,10 @@ class Generator:
         Generates plugin files.
     """
 
-    def __init__(self, prefix, outdir, modules, main_module, yang_dir):
-        self.prefix = prefix
-        self.outdir = outdir
-        self.modules = modules
-        self.main_module = main_module
+    def __init__(self, yang_dir: str, out_dir: str, config: GeneratorConfiguration):
+        self.out_dir = out_dir
         self.yang_dir = yang_dir
+        self.config = config
 
     def generate_directories(self):
         pass

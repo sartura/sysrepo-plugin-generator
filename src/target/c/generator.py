@@ -6,7 +6,7 @@ import shutil
 import jinja2
 from .libraries.uthash import UTHashLibrary
 
-from typing import List
+from typing import List, Dict, Any
 
 # add logging
 import logging
@@ -14,6 +14,7 @@ import logging
 from core.log.filters import DebugLevelFilter, InfoLevelFilter, WarningLevelFilter, ErrorLevelFilter
 
 # core
+from core.config import GeneratorConfiguration
 from core.generator import Generator
 from core.utils import extract_defines, to_c_variable
 
@@ -100,21 +101,19 @@ class CGenerator(Generator):
     # logger
     logger: logging.Logger
 
-    def __init__(self, prefix: str, outdir: str, modules: List[str], main_module: str, yang_dir: str):
+    def __init__(self, yang_dir: str, out_dir: str, config: GeneratorConfiguration):
         """
         Parameters
         ----------
-        prefix : str
-            Prefix for the plugin.
-        outdir : str
-            Output directory for the plugin.
-        modules : List[str]
-            List of modules to be used for the plugin.
-        main_module : str
-            Main module for the plugin.
         yang_dir : str
             Path to the directory with YANG modules.
+        out_dir : str
+            Output directory for the plugin.
+        config : Dict[str, Any]
+            TOML parsed configuration for the generator.
         """
+
+        super().__init__(yang_dir, out_dir, config)
 
         # setup logger for the generator
         self.logger = logging.getLogger("CGenerator")
@@ -138,20 +137,26 @@ class CGenerator(Generator):
         info_handler.addFilter(InfoLevelFilter())
         self.logger.addHandler(info_handler)
 
-        super().__init__(prefix, outdir, modules, main_module, yang_dir)
-
         self.logger.info("Starting generator")
 
-        self.source_dir = os.path.join(outdir, "src")
+        self.source_dir = os.path.join(out_dir, "src")
         self.ctx = libyang.Context(yang_dir)
 
+        yang_cfg = self.config.get_yang_configuration()
+        mod_cfg = yang_cfg.get_modules_configuration()
+
+        # load main module
+        self.ctx.load_module(mod_cfg.get_main_module())
+
        # load all needed modules
-        for m in modules:
+        for m in yang_cfg.get_modules_configuration().get_other_modules():
             self.ctx.load_module(m)
             self.ctx.get_module(m).feature_enable_all()
 
         # use main module for plugin generation
-        self.module = self.ctx.get_module(main_module)
+        self.module = self.ctx.get_module(mod_cfg.get_main_module())
+
+        # setup jinja2 environment
         self.jinja_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader("templates/c/"),
             autoescape=jinja2.select_autoescape(),
@@ -161,59 +166,57 @@ class CGenerator(Generator):
 
         # extract defines from module
         self.defines, self.defines_map = extract_defines(
-            self.prefix, self.module)
+            self.config.get_prefix(), self.module)
 
         # append the path to the file once generated - at the end used with CMakeLists.txt
         self.generated_files = []
         self.include_dirs = ["src"]
 
         # assume all features enabled for full module generation
+        # TODO: add feature selection support
         self.module.feature_enable_all()
 
         self.logger.info("Loaded module {}".format((self.module.name())))
-        self.logger.debug(
-            "All modules loaded into the libyang context: {}".format(modules))
-
-        if prefix is not None:
-            self.prefix = prefix
-        else:
-            self.prefix = self.module.prefix()
+        self.logger.info(
+            "Other modules loaded into the libyang context: {}".format(mod_cfg.get_other_modules()))
 
         # setup walkers
-        self.ly_tree_walker = LyTreeWalker(self.prefix, self.module.children())
-        self.types_walker = TypesWalker(self.prefix, self.module.children())
+        self.ly_tree_walker = LyTreeWalker(
+            self.config.get_prefix(), self.module.children())
+        self.types_walker = TypesWalker(
+            self.config.get_prefix(), self.module.children())
 
         # datastore walkers
         self.startup_walker = StartupWalker(
-            self.prefix, self.module.children())
+            self.config.get_prefix(), self.module.children())
         self.running_walker = RunningWalker(
-            self.prefix, self.module.children())
+            self.config.get_prefix(), self.module.children())
 
         # subscription walkers
         self.change_walker = ChangeSubscriptionWalker(
-            self.prefix, self.module.children())
+            self.config.get_prefix(), self.module.children())
         self.operational_walker = OperationalSubscriptionWalker(
-            self.prefix, self.module.children())
+            self.config.get_prefix(), self.module.children())
         self.rpc_walker = RPCSubscriptionWalker(
-            self.prefix, self.module.children())
+            self.config.get_prefix(), self.module.children())
 
         # API walkers
         self.change_api_walker = ChangeAPIWalker(
-            self.prefix, self.module.children(), self.source_dir)
+            self.config.get_prefix(), self.module.children(), self.source_dir)
         self.load_api_walker = LoadAPIWalker(
-            self.prefix, self.module.children(), self.source_dir)
+            self.config.get_prefix(), self.module.children(), self.source_dir)
         self.store_api_walker = StoreAPIWalker(
-            self.prefix, self.module.children(), self.source_dir)
+            self.config.get_prefix(), self.module.children(), self.source_dir)
         self.check_api_walker = CheckAPIWalker(
-            self.prefix, self.module.children(), self.source_dir)
+            self.config.get_prefix(), self.module.children(), self.source_dir)
 
         # full API walker
-        self.api_walker = APIWalker(self.prefix, self.module.children(
+        self.api_walker = APIWalker(self.config.get_prefix(), self.module.children(
         ), self.source_dir, ['check', 'load', 'store', 'change'])
 
         # setup libraries
         self.libraries = [
-            UTHashLibrary(self.outdir),
+            UTHashLibrary(self.out_dir),
         ]
 
         # add all walkers to the list for easier extraction
@@ -251,9 +254,9 @@ class CGenerator(Generator):
         # print(self.types_walker.ctx.structs)
 
     def generate_directories(self):
-        deps_dir = os.path.join(self.outdir, "deps")
+        deps_dir = os.path.join(self.out_dir, "deps")
         plugin_dir = os.path.join(self.source_dir, "plugin")
-        cmake_modules_dir = os.path.join(self.outdir, "CMakeModules")
+        cmake_modules_dir = os.path.join(self.out_dir, "CMakeModules")
         dirs = [
             deps_dir,
             self.source_dir,
@@ -334,7 +337,7 @@ class CGenerator(Generator):
         for lib in self.libraries:
             paths = lib.get_include_dirs()
             for path in paths:
-                self.include_dirs.append(path.replace(self.outdir, "")[1:])
+                self.include_dirs.append(path.replace(self.out_dir, "")[1:])
 
         # cmake with all files to compile
         self.__generate_cmake_lists()
@@ -344,10 +347,10 @@ class CGenerator(Generator):
 
     def __generate_plugin_files(self):
 
-        self.__generate_file("src/plugin.h", plugin_prefix=self.prefix, module=self.module.name(),
+        self.__generate_file("src/plugin.h", plugin_prefix=self.config.get_prefix(), module=self.module.name(),
                              defines=self.defines)
 
-        self.__generate_file("src/plugin.c", plugin_prefix=self.prefix, module=self.module.name(),
+        self.__generate_file("src/plugin.c", plugin_prefix=self.config.get_prefix(), module=self.module.name(),
                              rpc_callbacks=self.rpc_walker.get_callbacks(),
                              oper_callbacks=self.operational_walker.get_callbacks(),
                              change_callbacks=self.change_walker.get_callbacks(),
@@ -355,18 +358,19 @@ class CGenerator(Generator):
                              )
 
         self.__generate_file(
-            "src/main.c", plugin_prefix=self.prefix, module=self.module.name())
+            "src/main.c", plugin_prefix=self.config.get_prefix(), module=self.module.name())
 
     def __generate_common_files(self):
         # common.h
-        self.__generate_file("src/plugin/common.h", plugin_prefix=self.prefix, module=self.module.name(),
+        self.__generate_file("src/plugin/common.h", plugin_prefix=self.config.get_prefix(), module=self.module.name(),
                              defines=self.defines)
 
         # context.h
-        self.__generate_file("src/plugin/context.h", plugin_prefix=self.prefix)
+        self.__generate_file("src/plugin/context.h",
+                             plugin_prefix=self.config.get_prefix())
 
         # types.h
-        self.__generate_file("src/plugin/types.h", plugin_prefix=self.prefix,
+        self.__generate_file("src/plugin/types.h", plugin_prefix=self.config.get_prefix(),
                              structs=self.types_walker.ctx.structs,
                              enums=self.types_walker.ctx.enums,
                              unions=self.types_walker.ctx.unions,
@@ -374,9 +378,9 @@ class CGenerator(Generator):
                              types=self.api_walker.get_types())
 
         # ly_tree
-        self.__generate_file("src/plugin/ly_tree.h",  plugin_prefix=self.prefix,
+        self.__generate_file("src/plugin/ly_tree.h",  plugin_prefix=self.config.get_prefix(),
                              ly_tree_functions=self.ly_tree_walker.get_functions(), LyNode=LyNode)
-        self.__generate_file("src/plugin/ly_tree.c",  plugin_prefix=self.prefix,
+        self.__generate_file("src/plugin/ly_tree.c",  plugin_prefix=self.config.get_prefix(),
                              ly_tree_functions=self.ly_tree_walker.get_functions(), LyNode=LyNode)
         # for fn in self.ly_tree_walker.get_functions():
         #     if fn.node.nodetype() == LyNode.LIST:
@@ -385,32 +389,32 @@ class CGenerator(Generator):
 
     def __generate_datastore_files(self):
         self.__generate_file("src/plugin/startup/load.h",
-                             plugin_prefix=self.prefix)
-        self.__generate_file("src/plugin/startup/load.c", plugin_prefix=self.prefix,
+                             plugin_prefix=self.config.get_prefix())
+        self.__generate_file("src/plugin/startup/load.c", plugin_prefix=self.config.get_prefix(),
                              load_callbacks=self.startup_walker.get_callbacks())
         self.__generate_file("src/plugin/startup/store.h",
-                             plugin_prefix=self.prefix)
-        self.__generate_file("src/plugin/startup/store.c", plugin_prefix=self.prefix,
+                             plugin_prefix=self.config.get_prefix())
+        self.__generate_file("src/plugin/startup/store.c", plugin_prefix=self.config.get_prefix(),
                              store_callbacks=self.startup_walker.get_callbacks())
 
     def __generate_subscription_files(self):
-        self.__generate_file("src/plugin/subscription/change.h", plugin_prefix=self.prefix,
+        self.__generate_file("src/plugin/subscription/change.h", plugin_prefix=self.config.get_prefix(),
                              change_callbacks=self.change_walker.get_callbacks())
         self.__generate_file("src/plugin/subscription/change.c",
-                             plugin_prefix=self.prefix,
+                             plugin_prefix=self.config.get_prefix(),
                              change_callbacks=self.change_walker.get_callbacks(),
                              change_path_map=self.change_api_walker.get_path_map(),
                              to_c_variable=to_c_variable,
                              dir_functions=self.change_api_walker.get_directory_functions())
 
-        self.__generate_file("src/plugin/subscription/operational.h", plugin_prefix=self.prefix,
+        self.__generate_file("src/plugin/subscription/operational.h", plugin_prefix=self.config.get_prefix(),
                              oper_callbacks=self.operational_walker.get_callbacks())
-        self.__generate_file("src/plugin/subscription/operational.c", plugin_prefix=self.prefix,
+        self.__generate_file("src/plugin/subscription/operational.c", plugin_prefix=self.config.get_prefix(),
                              oper_callbacks=self.operational_walker.get_callbacks())
 
-        self.__generate_file("src/plugin/subscription/rpc.h", plugin_prefix=self.prefix,
+        self.__generate_file("src/plugin/subscription/rpc.h", plugin_prefix=self.config.get_prefix(),
                              rpc_callbacks=self.rpc_walker.get_callbacks())
-        self.__generate_file("src/plugin/subscription/rpc.c", plugin_prefix=self.prefix,
+        self.__generate_file("src/plugin/subscription/rpc.c", plugin_prefix=self.config.get_prefix(),
                              rpc_callbacks=self.rpc_walker.get_callbacks())
 
     def __generate_api_files(self):
@@ -431,9 +435,9 @@ class CGenerator(Generator):
                     "src/plugin/api/{}.jinja".format(file))
                 with open(path, "w") as api_file:
                     api_file.write(template.render(
-                        plugin_prefix=self.prefix, prefix=prefix, node_list=node_list, LyNode=LyNode, to_c_variable=to_c_variable, types=types))
+                        plugin_prefix=self.config.get_prefix(), prefix=prefix, node_list=node_list, LyNode=LyNode, to_c_variable=to_c_variable, types=types))
                     self.generated_files.append(
-                        path.replace(self.outdir, "")[1:])
+                        path.replace(self.out_dir, "")[1:])
 
         dirs = self.change_api_walker.get_directories()
         dir_functions = self.change_api_walker.get_directory_functions()
@@ -450,9 +454,9 @@ class CGenerator(Generator):
                         "src/plugin/api/{}.jinja".format(file))
                     with open(path, "w") as api_file:
                         api_file.write(template.render(
-                            plugin_prefix=self.prefix, prefix=prefix, node_list=node_list, LyNode=LyNode, to_c_variable=to_c_variable, types=types))
+                            plugin_prefix=self.config.get_prefix(), prefix=prefix, node_list=node_list, LyNode=LyNode, to_c_variable=to_c_variable, types=types))
                         self.generated_files.append(
-                            path.replace(self.outdir, "")[1:])
+                            path.replace(self.out_dir, "")[1:])
 
     def __generate_data_files(self):
         pass
@@ -462,9 +466,9 @@ class CGenerator(Generator):
 
         # generate #def's
         self.defines, self.defines_map = extract_defines(
-            self.prefix, self.module)
+            self.config.get_prefix(), self.module)
 
-        path = os.path.join(self.outdir, file)
+        path = os.path.join(self.out_dir, file)
         self.generated_files.append(file)
         self.logger.info("Generating {}".format(path))
 
@@ -473,7 +477,7 @@ class CGenerator(Generator):
 
     def __generate_cmake_files(self):
         modules_input_dir = "templates/common/CMakeModules"
-        modules_output_dir = os.path.join(self.outdir, "CMakeModules")
+        modules_output_dir = os.path.join(self.out_dir, "CMakeModules")
 
         for module in os.listdir(modules_input_dir):
             src_path = os.path.join(modules_input_dir, module)
@@ -483,7 +487,7 @@ class CGenerator(Generator):
 
     def __generate_cmake_lists(self):
         self.__generate_file(
-            "CMakeLists.txt", plugin_prefix=self.prefix, source_files=[file for file in self.generated_files if file[-2:] == ".c"], include_dirs=self.include_dirs)
+            "CMakeLists.txt", plugin_prefix=self.config.get_prefix(), source_files=[file for file in self.generated_files if file[-2:] == ".c"], include_dirs=self.include_dirs)
         self.__generate_file(
             "CompileOptions.cmake")
 
@@ -492,7 +496,7 @@ class CGenerator(Generator):
         if shutil.which("clang-format") is not None:
             # copy the used clang-format file into the source directory and apply it to all generated files
             src_path = "templates/common/.clang-format"
-            dst_path = os.path.join(self.outdir, ".clang-format")
+            dst_path = os.path.join(self.out_dir, ".clang-format")
 
             shutil.copyfile(src_path, dst_path)
 
@@ -501,7 +505,7 @@ class CGenerator(Generator):
                 if gen[-1:] == "c" or gen[-1:] == "h":
                     self.logger.info("Applying style to {}".format(gen))
                     params = ["clang-format", "-style=file",
-                              os.path.join(self.outdir, gen)]
+                              os.path.join(self.out_dir, gen)]
                     output = subprocess.check_output(params)
-                    with open(os.path.join(self.outdir, gen), "wb") as out_file:
+                    with open(os.path.join(self.out_dir, gen), "wb") as out_file:
                         out_file.write(output)
