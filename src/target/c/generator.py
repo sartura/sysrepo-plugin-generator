@@ -6,6 +6,13 @@ import shutil
 import jinja2
 from .libraries.uthash import UTHashLibrary
 
+from typing import List
+
+# add logging
+import logging
+
+from core.log.filters import DebugLevelFilter, InfoLevelFilter, WarningLevelFilter, ErrorLevelFilter
+
 # core
 from core.generator import Generator
 from core.utils import extract_defines, to_c_variable
@@ -34,15 +41,50 @@ from .walkers.types import TypesWalker
 
 
 class CGenerator(Generator):
-    def __init__(self, prefix, outdir, modules, main_module, yang_dir):
+    ly_tree_walker: LyTreeWalker
+    types_walker: TypesWalker
+    startup_walker: StartupWalker
+    running_walker: RunningWalker
+    change_walker: ChangeSubscriptionWalker
+    operational_walker: OperationalSubscriptionWalker
+    rpc_walker: RPCSubscriptionWalker
+    change_api_walker: ChangeAPIWalker
+    check_api_walker: CheckAPIWalker
+    load_api_walker: LoadAPIWalker
+    store_api_walker: StoreAPIWalker
+
+    logger: logging.Logger
+
+    def __init__(self, prefix: str, outdir: str, modules: List[str], main_module: str, yang_dir: str):
+        # setup logger for the generator
+        self.logger = logging.getLogger("CGenerator")
+        self.logger.setLevel(logging.DEBUG)
+
+        # Debug level handler
+        debug_handler = logging.StreamHandler()
+        debug_handler.setLevel(logging.DEBUG)
+        debug_formatter = logging.Formatter(
+            '[%(levelname)s][%(name)s][%(filename)s:%(lineno)s]: %(message)s')
+        debug_handler.setFormatter(debug_formatter)
+        debug_handler.addFilter(DebugLevelFilter())
+        self.logger.addHandler(debug_handler)
+
+        info_handler = logging.StreamHandler()
+        info_handler.setLevel(logging.INFO)
+        info_formatter = logging.Formatter(
+            '[%(levelname)s][%(name)s]: %(message)s')
+        info_handler.setFormatter(info_formatter)
+        info_handler.addFilter(InfoLevelFilter())
+        self.logger.addHandler(info_handler)
+
         super().__init__(prefix, outdir, modules, main_module, yang_dir)
 
-        print("Started generator")
+        self.logger.info("Starting generator")
 
         self.source_dir = os.path.join(outdir, "src")
         self.ctx = libyang.Context(yang_dir)
 
-        # load all needed modules
+       # load all needed modules
         for m in modules:
             self.ctx.load_module(m)
             self.ctx.get_module(m).feature_enable_all()
@@ -67,8 +109,8 @@ class CGenerator(Generator):
         # assume all features enabled for full module generation
         self.module.feature_enable_all()
 
-        print("Loaded module %s:" % (self.module.name()))
-        print("All loaded modules: ", modules)
+        self.logger.info("Loaded module {}".format((self.module.name())))
+        self.logger.debug("All loaded modules: {}".format(modules))
 
         if prefix is not None:
             self.prefix = prefix
@@ -288,11 +330,10 @@ class CGenerator(Generator):
                              ly_tree_functions=self.ly_tree_walker.get_functions(), LyNode=LyNode)
         self.__generate_file("src/plugin/ly_tree.c",  plugin_prefix=self.prefix,
                              ly_tree_functions=self.ly_tree_walker.get_functions(), LyNode=LyNode)
-        for fn in self.ly_tree_walker.get_functions():
-            if fn.node.nodetype() == LyNode.LIST:
-
-                print(fn.node.keys())
-            # self.include_dirs.append(fn.get_include_dir())
+        # for fn in self.ly_tree_walker.get_functions():
+        #     if fn.node.nodetype() == LyNode.LIST:
+        #         print(fn.node.keys())
+        # self.include_dirs.append(fn.get_include_dir())
 
     def __generate_datastore_files(self):
         self.__generate_file("src/plugin/startup/load.h",
@@ -325,7 +366,7 @@ class CGenerator(Generator):
                              rpc_callbacks=self.rpc_walker.get_callbacks())
 
     def __generate_api_files(self):
-        print("Generating API files:")
+        self.logger.info("Generating API files:")
         dirs = self.api_walker.get_directories()
         dir_functions = self.api_walker.get_directory_functions()
         files = self.api_walker.get_api_filenames()
@@ -337,7 +378,7 @@ class CGenerator(Generator):
 
             for file in files:
                 path = os.path.join(dir, file)
-                print("\tGenerating {}".format(path))
+                self.logger.info("\tGenerating {}".format(path))
                 template = self.jinja_env.get_template(
                     "src/plugin/api/{}.jinja".format(file))
                 with open(path, "w") as api_file:
@@ -356,7 +397,7 @@ class CGenerator(Generator):
                 prefix, node_list = dir_functions[dir]
                 for file in files:
                     path = os.path.join(dir, file)
-                    print("\tGenerating {}".format(path))
+                    self.logger.info("\tGenerating {}".format(path))
                     template = self.jinja_env.get_template(
                         "src/plugin/api/{}.jinja".format(file))
                     with open(path, "w") as api_file:
@@ -377,7 +418,7 @@ class CGenerator(Generator):
 
         path = os.path.join(self.outdir, file)
         self.generated_files.append(file)
-        print("Generating {}".format(path))
+        self.logger.info("Generating {}".format(path))
 
         with open(path, "w") as file:
             file.write(template.render(kwargs))
@@ -399,7 +440,7 @@ class CGenerator(Generator):
             "CompileOptions.cmake")
 
     def __apply_clang_format(self):
-        print("Applying .clang-format style")
+        self.logger.info("Applying .clang-format style")
         if shutil.which("clang-format") is not None:
             # copy the used clang-format file into the source directory and apply it to all generated files
             src_path = "templates/common/.clang-format"
@@ -410,7 +451,7 @@ class CGenerator(Generator):
             for gen in self.generated_files:
                 # run clang-format command
                 if gen[-1:] == "c" or gen[-1:] == "h":
-                    print("Applying style to {}".format(gen))
+                    self.logger.info("Applying style to {}".format(gen))
                     params = ["clang-format", "-style=file",
                               os.path.join(self.outdir, gen)]
                     output = subprocess.check_output(params)
