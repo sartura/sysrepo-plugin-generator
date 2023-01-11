@@ -26,10 +26,10 @@ class YangPrefixConfiguration:
     def __init__(self, config: Dict[str, Any]) -> None:
         self.cfg = config
 
-    def check_prefix(self, prefix: str) -> str | None:
+    def check_prefix(self, prefix: str) -> bool:
         if prefix in self.cfg:
-            return self.cfg[prefix]
-        return None
+            return True
+        return False
 
 
 class YangTypesConfiguration:

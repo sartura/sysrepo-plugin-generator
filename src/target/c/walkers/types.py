@@ -133,7 +133,7 @@ class TypesContext:
     def get_prefix(self):
         return self.prefix
 
-    def check_prefix_configuration(self, key: str) -> str | None:
+    def check_prefix_configuration(self, key: str):
         return self.prefix_cfg.check_prefix(key)
 
     def add_struct(self, sd: StructDef):
