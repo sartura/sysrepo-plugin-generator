@@ -2,6 +2,19 @@ from core.utils import has_children
 
 
 class Walker:
+    """
+    Base class for libyang tree walkers.
+
+    Methods
+    -------
+    walk_node(node, depth)
+        Called for each node in the tree. If it returns True, the node's children are not walked.
+    add_node(node)
+        Called for each node in the tree. If it returns True, the node is added to the stack.
+    walk()
+        Walks the tree.
+    """
+
     def __init__(self, root_nodes):
         self.root_nodes = root_nodes
 
