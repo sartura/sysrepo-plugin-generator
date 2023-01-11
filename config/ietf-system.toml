@@ -1,0 +1,11 @@
+[generator]
+prefix = "ietf_sys"
+
+[yang.modules]
+main = "ietf-system"
+other = []
+
+[yang.types]
+identityref = "char *"
+
+[yang.prefix]
