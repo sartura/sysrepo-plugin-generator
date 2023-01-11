@@ -4,6 +4,8 @@ from libyang.schema import Node as LyNode
 from core.utils import to_c_variable
 from core.walker import Walker
 
+from core.config import YangPrefixConfiguration, YangTypesConfiguration
+
 from libyang.schema import SNode
 
 
@@ -65,6 +67,9 @@ class StructDef(Def):
     def __repr__(self):
         return str(self)
 
+    def reverse_vars(self):
+        self.vars.reverse()
+
 
 class EnumDef(Def):
     values: List[str]
@@ -75,6 +80,9 @@ class EnumDef(Def):
 
     def get_values(self):
         return self.values
+
+    def reverse_values(self):
+        self.values.reverse()
 
 
 class UnionDef(Def):
@@ -103,6 +111,7 @@ class TypesContext:
         Map of type names to their definitions.
     """
     prefix: str
+    prefix_cfg: YangPrefixConfiguration
     parent_stack: Dict[int, str]
     structs: List[StructDef]
     unions: List[UnionDef]
@@ -110,9 +119,10 @@ class TypesContext:
     typedefs: List[Typedef]
     types_map: Dict[str, Def]
 
-    def __init__(self, prefix):
+    def __init__(self, prefix: str, prefix_cfg: YangPrefixConfiguration):
         self.types_data = {}
         self.prefix = prefix
+        self.prefix_cfg = prefix_cfg
         self.parent_stack = {}
         self.structs: List[StructDef] = []
         self.unions: List[UnionDef] = []
@@ -122,6 +132,9 @@ class TypesContext:
 
     def get_prefix(self):
         return self.prefix
+
+    def check_prefix_configuration(self, key: str) -> str | None:
+        return self.prefix_cfg.check_prefix(key)
 
     def add_struct(self, sd: StructDef):
         self.structs.append(sd)
@@ -151,11 +164,26 @@ class TypesContext:
     def get_parent(self, depth: int) -> str:
         return self.parent_stack[depth-1]
 
+    def reverse_structs(self):
+        self.structs.reverse()
+
+        for s in self.structs:
+            s.reverse_vars()
+
+    def reverse_typedefs(self):
+        self.typedefs.reverse()
+
+    def reverse_enums(self):
+        self.enums.reverse()
+
+        for e in self.enums:
+            e.reverse_values()
+
 
 class TypesWalker(Walker):
-    def __init__(self, prefix, root_nodes):
+    def __init__(self, prefix, root_nodes, prefix_cfg: YangPrefixConfiguration):
         super().__init__(root_nodes)
-        self.ctx = TypesContext(prefix)
+        self.ctx = TypesContext(prefix, prefix_cfg)
 
     def get_parent_name(self, depth: int) -> str:
         return to_c_variable("{}_{}".format(
@@ -343,3 +371,8 @@ class TypesWalker(Walker):
 
     def get_types_data(self):
         return self.ctx.types_data
+
+    def on_finish(self):
+        self.ctx.reverse_structs()
+        self.ctx.reverse_enums()
+        self.ctx.reverse_typedefs()

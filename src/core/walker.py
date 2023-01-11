@@ -17,6 +17,8 @@ class Walker:
         Called for each node in the tree. If it returns True, the node is added to the stack.
     walk()
         Walks the tree.
+    on_finish()
+        Called after the tree has been iterated over.
     """
 
     def __init__(self, root_nodes: Iterator[SNode]):
@@ -66,3 +68,8 @@ class Walker:
                 for n in node.children():
                     if self.add_node(n):
                         node_stack.append((n, depth + 1))
+
+        self.on_finish()
+
+    def on_finish(self):
+        pass

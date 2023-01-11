@@ -20,6 +20,18 @@ class YangModulesConfiguration:
         return self.other_modules
 
 
+class YangPrefixConfiguration:
+    cfg: Dict[str, str]
+
+    def __init__(self, config: Dict[str, Any]) -> None:
+        self.cfg = config
+
+    def check_prefix(self, prefix: str) -> str | None:
+        if prefix in self.cfg:
+            return self.cfg[prefix]
+        return None
+
+
 class YangTypesConfiguration:
     types_map: Dict[str, str]
 
@@ -33,16 +45,21 @@ class YangTypesConfiguration:
 class YangConfiguration:
     mod_cfg: YangModulesConfiguration
     types_cfg: YangTypesConfiguration
+    prefix_cfg: YangPrefixConfiguration
 
     def __init__(self, config: Dict[str, Any]):
         self.mod_cfg = YangModulesConfiguration(config["modules"])
         self.types_cfg = YangTypesConfiguration(config["types"])
+        self.prefix_cfg = YangPrefixConfiguration(config["prefix"])
 
     def get_modules_configuration(self) -> YangModulesConfiguration:
         return self.mod_cfg
 
     def get_types_configuration(self) -> YangTypesConfiguration:
         return self.types_cfg
+
+    def get_prefix_configuration(self) -> YangPrefixConfiguration:
+        return self.prefix_cfg
 
 
 class GeneratorConfiguration:

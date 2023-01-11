@@ -19,9 +19,9 @@ args = arg_parser.parse_args()
 
 data = toml.load(args.config)
 
-generator = None
-
 config = GeneratorConfiguration(data)
+
+generator = None
 
 # depending on the target language - choose which generator to use
 if args.lang == "C":
@@ -32,11 +32,11 @@ else:
     print("Unsupported language: " + args.lang)
     exit(1)
 
-# # generate project directory structure
-# generator.generate_directories()
+# generate project directory structure
+generator.generate_directories()
 
-# # copy files which do not need generation
-# generator.copy_files()
+# copy files which do not need generation
+generator.copy_files()
 
-# # generate all project files
-# generator.generate_files()
+# generate all project files
+generator.generate_files()

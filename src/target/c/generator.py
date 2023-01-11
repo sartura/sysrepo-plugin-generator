@@ -184,7 +184,7 @@ class CGenerator(Generator):
         self.ly_tree_walker = LyTreeWalker(
             self.config.get_prefix(), self.module.children())
         self.types_walker = TypesWalker(
-            self.config.get_prefix(), self.module.children())
+            self.config.get_prefix(), self.module.children(), self.config.get_yang_configuration().get_prefix_configuration())
 
         # datastore walkers
         self.startup_walker = StartupWalker(
@@ -222,24 +222,24 @@ class CGenerator(Generator):
         # add all walkers to the list for easier extraction
         all_walkers = [
             # base
-            # self.ly_tree_walker,
+            self.ly_tree_walker,
             self.types_walker,
 
             # datastore
-            # self.startup_walker,
-            # self.running_walker,
+            self.startup_walker,
+            self.running_walker,
 
             # subscription
-            # self.change_walker,
-            # self.operational_walker,
-            # self.rpc_walker,
+            self.change_walker,
+            self.operational_walker,
+            self.rpc_walker,
 
             # API
-            # self.change_api_walker,
-            # self.load_api_walker,
-            # self.store_api_walker,
-            # self.check_api_walker,
-            # self.api_walker
+            self.change_api_walker,
+            self.load_api_walker,
+            self.store_api_walker,
+            self.check_api_walker,
+            self.api_walker
         ]
 
         # extract all data

@@ -9,3 +9,8 @@ features = ["router-id"]
 
 [yang.types]
 identityref = "char *"
+
+[yang.prefix]
+# add this prefix for inner children of the containers/lists whose name is equal to the key
+ipv4 = "v4"
+ipv6 = "v6"
