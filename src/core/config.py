@@ -31,6 +31,9 @@ class YangPrefixConfiguration:
             return True
         return False
 
+    def get_prefix_value(self, prefix: str) -> str:
+        return self.cfg[prefix]
+
 
 class YangTypesConfiguration:
     types_map: Dict[str, str]
