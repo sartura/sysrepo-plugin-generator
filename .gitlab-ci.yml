@@ -14,7 +14,7 @@ generate:
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
     - mkdir generated
     - mkdir generated/ietf-system
-    - python3 src/sysrepo-plugin-generator.py -d yang -o gen/ietf-system -l C -c config/ietf-system.toml
+    - python3 src/sysrepo-plugin-generator.py -d yang -o generated/ietf-system -l C -c config/ietf-system.toml
   
   artifacts:
     paths:
