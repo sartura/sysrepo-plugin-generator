@@ -1,9 +1,9 @@
 [generator]
-prefix = "ietf_if"
+prefix = "ietf_dhcp"
 
 [yang.modules]
-main = "ietf-interfaces"
-other = ["ietf-ip"]
+main = "ietf-dhcpv6-client"
+other = ["ietf-dhcpv6-common"]
 
 [yang.types]
 identityref = "char *"
