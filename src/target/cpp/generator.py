@@ -1,4 +1,5 @@
 import logging
+import os
 
 from typing import Dict, Any
 
@@ -38,6 +39,8 @@ class CPPGenerator(Generator):
         self.logger.addHandler(info_handler)
 
         self.logger.info("Starting C++ generator")
+
+        self.source_dir = os.path.join(out_dir, "src")
 
     def generate_directories(self):
         pass
