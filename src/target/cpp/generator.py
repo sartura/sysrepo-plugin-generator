@@ -1,5 +1,6 @@
 import logging
 import os
+import shutil
 
 from typing import Dict, Any
 
@@ -60,7 +61,15 @@ class CPPGenerator(Generator):
                 os.mkdir(dir)
 
     def copy_files(self):
-        pass
+        # copy CMake Find scripts
+        modules_input_dir = "templates/common/CMakeModules"
+        modules_output_dir = os.path.join(self.out_dir, "CMakeModules")
+
+        for module in os.listdir(modules_input_dir):
+            src_path = os.path.join(modules_input_dir, module)
+            dst_path = os.path.join(modules_output_dir, module)
+
+            shutil.copyfile(src_path, dst_path)
 
     def generate_files(self):
         pass
