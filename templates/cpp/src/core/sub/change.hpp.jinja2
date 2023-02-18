@@ -11,7 +11,7 @@ namespace sr = sysrepo;
 namespace {{root_namespace}} {
 namespace sub::change {
 {% for cb in change_callbacks %}
-// sysrepo-plugin-generator: Generated callback for path {{cb.path}}
+// sysrepo-plugin-generator: Generated module change callback for path {{cb.path}}
 sr::ErrorCode {{cb.sufix}}_module_change_cb(sr::Session session, uint32_t subscriptionId, std::string_view moduleName, std::optional<std::string_view> subXPath, sr::Event event, uint32_t requestId);
 
 {% endfor %}

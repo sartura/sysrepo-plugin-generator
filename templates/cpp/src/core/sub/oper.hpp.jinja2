@@ -1,0 +1,19 @@
+#pragma once
+
+#include <iostream>
+#include <optional>
+#include <string_view>
+
+#include <sysrepo-cpp/Subscription.hpp>
+
+namespace sr = sysrepo;
+
+namespace {{root_namespace}} {
+namespace sub::oper {
+{% for cb in oper_callbacks %}
+// sysrepo-plugin-generator: Generated operational callback for path {{cb.path}}
+sr::ErrorCode {{cb.sufix}}_oper_cb(Session session, uint32_t subscriptionId, std::string_view moduleName, std::optional<std::string_view> subXPath, std::optional<std::string_view> requestXPath, uint32_t requestId, std::optional<libyang::DataNode>& output);
+
+{% endfor %}
+}
+}

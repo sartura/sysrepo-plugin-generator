@@ -152,11 +152,17 @@ class CPPGenerator(Generator):
         with open(path, "w") as file:
             file.write(template.render(kwargs))
 
-    def generate_files(self):
+    def __generate_sub_files(self):
+        # module change subscriptions
         self.__generate_file("src/core/sub/change.hpp", root_namespace=self.config.get_prefix().replace("_", "::"),
                              change_callbacks=self.change_sub_walker.get_callbacks())
         self.__generate_file("src/core/sub/change.cpp", root_namespace=self.config.get_prefix().replace("_", "::"),
                              change_callbacks=self.change_sub_walker.get_callbacks())
+
+        # operational subscriptions
+
+    def generate_files(self):
+        self.__generate_sub_files()
 
     def apply_formatting(self):
         self.logger.info("Applying .clang-format style")

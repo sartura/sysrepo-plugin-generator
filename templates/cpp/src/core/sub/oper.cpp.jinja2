@@ -1,0 +1,14 @@
+#include "oper.hpp"
+
+namespace {{root_namespace}} {
+namespace sub::change {
+{% for cb in change_callbacks %}
+// sysrepo-plugin-generator: Generated module change callback for path {{cb.path}}
+sr::ErrorCode {{cb.sufix}}_module_change_cb(sr::Session session, uint32_t subscriptionId, std::string_view moduleName, std::optional<std::string_view> subXPath, sr::Event event, uint32_t requestId) {
+    sr::ErrorCode error = sr::ErrorCode::Ok;
+    return static_cast<int>(error);
+}
+
+{% endfor %}
+}
+}
