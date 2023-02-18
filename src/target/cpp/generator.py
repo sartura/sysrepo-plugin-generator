@@ -43,7 +43,21 @@ class CPPGenerator(Generator):
         self.source_dir = os.path.join(out_dir, "src")
 
     def generate_directories(self):
-        pass
+        cmake_modules_dir = os.path.join(self.out_dir, "CMakeModules")
+        plugin_dir = os.path.join(self.source_dir, "core")
+        dirs = [
+            self.source_dir,
+            plugin_dir,
+            cmake_modules_dir,
+            os.path.join(plugin_dir, "subscription"),
+            os.path.join(plugin_dir, "startup"),
+            os.path.join(plugin_dir, "api"),
+            os.path.join(plugin_dir, "data"),
+        ]
+
+        for dir in dirs:
+            if not os.path.exists(dir):
+                os.mkdir(dir)
 
     def copy_files(self):
         pass
