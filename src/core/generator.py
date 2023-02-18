@@ -15,6 +15,8 @@ class Generator:
         Copies the files which do not need generation.
     generate_files()
         Generates plugin files.
+    apply_formatting()
+        Applies formatting to the generated files.
     """
 
     def __init__(self, yang_dir: str, out_dir: str, config: GeneratorConfiguration):
@@ -29,4 +31,7 @@ class Generator:
         pass
 
     def generate_files(self):
+        pass
+
+    def apply_formatting(self):
         pass

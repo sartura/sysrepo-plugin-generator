@@ -1,6 +1,7 @@
 import logging
 import os
 import shutil
+import subprocess
 
 from typing import Dict, Any
 
@@ -42,6 +43,7 @@ class CPPGenerator(Generator):
         self.logger.info("Starting C++ generator")
 
         self.source_dir = os.path.join(out_dir, "src")
+        self.generated_files = []
 
     def generate_directories(self):
         cmake_modules_dir = os.path.join(self.out_dir, "CMakeModules")
@@ -73,3 +75,22 @@ class CPPGenerator(Generator):
 
     def generate_files(self):
         pass
+
+    def apply_formatting(self):
+        self.logger.info("Applying .clang-format style")
+        if shutil.which("clang-format") is not None:
+            # copy the used clang-format file into the source directory and apply it to all generated files
+            src_path = "templates/common/.clang-format"
+            dst_path = os.path.join(self.out_dir, ".clang-format")
+
+            shutil.copyfile(src_path, dst_path)
+
+            for gen in self.generated_files:
+                # run clang-format command
+                if gen[-1:] == "c" or gen[-1:] == "h":
+                    self.logger.info("Applying style to {}".format(gen))
+                    params = ["clang-format", "-style=file",
+                              os.path.join(self.out_dir, gen)]
+                    output = subprocess.check_output(params)
+                    with open(os.path.join(self.out_dir, gen), "wb") as out_file:
+                        out_file.write(output)

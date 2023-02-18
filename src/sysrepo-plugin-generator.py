@@ -40,3 +40,6 @@ generator.copy_files()
 
 # generate all project files
 generator.generate_files()
+
+# apply formatting to the generated files
+generator.apply_formatting()
