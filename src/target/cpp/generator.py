@@ -16,12 +16,14 @@ from core.log.filters import DebugLevelFilter, InfoLevelFilter
 
 from .walkers.sub.change import ChangeSubscriptionWalker
 from .walkers.sub.oper import OperSubscriptionWalker
+from .walkers.sub.rpc import RPCSubscriptionWalker
 
 
 class CPPGenerator(Generator):
     # walkers
     change_sub_walker: ChangeSubscriptionWalker
     oper_sub_walker: OperSubscriptionWalker
+    rpc_sub_walker: RPCSubscriptionWalker
 
     # libyang
     ly_mod: libyang.Module
@@ -76,18 +78,21 @@ class CPPGenerator(Generator):
             self.config.get_prefix(), self.ly_mod.children(), self.config.get_yang_configuration().get_prefix_configuration())
         self.oper_sub_walker = OperSubscriptionWalker(
             self.config.get_prefix(), self.ly_mod.children(), self.config.get_yang_configuration().get_prefix_configuration())
+        self.rpc_sub_walker = RPCSubscriptionWalker(
+            self.config.get_prefix(), self.ly_mod.children(), self.config.get_yang_configuration().get_prefix_configuration())
 
         # run walkers
         walkers = [
             self.change_sub_walker,
-            self.oper_sub_walker
+            self.oper_sub_walker,
+            self.rpc_sub_walker
         ]
 
         for walker in walkers:
             walker.walk()
 
-        self.logger.info("oper callbacks: {}".format(
-            self.oper_sub_walker.get_callbacks()))
+        self.logger.info("rpc callbacks: {}".format(
+            self.rpc_sub_walker.get_callbacks()))
 
     def __setup_libyang_ctx(self, yang_dir: str):
         self.ctx = libyang.Context(yang_dir)
@@ -172,6 +177,12 @@ class CPPGenerator(Generator):
                              oper_callbacks=self.oper_sub_walker.get_callbacks())
         self.__generate_file("src/core/sub/oper.cpp", root_namespace=self.config.get_prefix().replace("_", "::"),
                              oper_callbacks=self.oper_sub_walker.get_callbacks())
+
+        # rpc/action subscriptions
+        self.__generate_file("src/core/sub/rpc.hpp", root_namespace=self.config.get_prefix().replace("_", "::"),
+                             rpc_callbacks=self.rpc_sub_walker.get_callbacks())
+        self.__generate_file("src/core/sub/rpc.cpp", root_namespace=self.config.get_prefix().replace("_", "::"),
+                             rpc_callbacks=self.rpc_sub_walker.get_callbacks())
 
     def generate_files(self):
         self.__generate_sub_files()

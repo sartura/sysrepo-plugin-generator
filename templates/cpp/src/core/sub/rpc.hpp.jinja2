@@ -1,0 +1,19 @@
+#pragma once
+
+#include <iostream>
+#include <optional>
+#include <string_view>
+
+#include <sysrepo-cpp/Subscription.hpp>
+
+namespace sr = sysrepo;
+
+namespace {{root_namespace}} {
+namespace sub::rpc {
+{% for cb in rpc_callbacks %}
+// sysrepo-plugin-generator: Generated RPC/action callback for path {{cb.path}}
+sr::ErrorCode {{cb.sufix}}_rpc_cb(Session session, uint32_t subscriptionId, std::string_view path, const libyang::DataNode input, Event event, uint32_t requestId, libyang::DataNode output);
+
+{% endfor %}
+}
+}

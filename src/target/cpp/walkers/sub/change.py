@@ -61,7 +61,7 @@ class ChangeSubscriptionWalker(Walker):
         return False
 
     def add_node(self, node):
-        return not node.nodetype() == LyNode.RPC and not node.nodetype() == LyNode.ACTION and not node.nodetype() == LyNode.NOTIF and not node.config_false()
+        return not node.nodetype() == LyNode.RPC and not node.nodetype() == LyNode.ACTION and not node.nodetype() == LyNode.NOTIF and not node.config_false() and not node.deprecated() and not node.obsolete()
 
     def get_callbacks(self):
         return list(reversed(self.ctx.callbacks))
