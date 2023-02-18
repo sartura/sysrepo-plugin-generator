@@ -3,6 +3,10 @@ import os
 import shutil
 import subprocess
 
+import jinja2
+
+import libyang
+
 from typing import Dict, Any
 
 from core.config import GeneratorConfiguration
@@ -16,6 +20,9 @@ from .walkers.sub.change import ChangeSubscriptionWalker
 class CPPGenerator(Generator):
     # walkers
     change_sub_walker: ChangeSubscriptionWalker
+
+    # libyang
+    ly_mod: libyang.Module
 
     # logger
     logger: logging.Logger
@@ -47,8 +54,54 @@ class CPPGenerator(Generator):
 
         self.logger.info("Starting C++ generator")
 
+        # setup jinja2 environment
+        self.jinja_env = jinja2.Environment(
+            loader=jinja2.FileSystemLoader("templates/c/"),
+            autoescape=jinja2.select_autoescape(),
+            trim_blocks=True,
+            lstrip_blocks=True
+        )
+
+        # initialize libyang and jinja2
+        self.__setup_libyang_ctx(yang_dir)
+        self.__setup_jinja2_env()
+
+        # setup and run walkers
         self.source_dir = os.path.join(out_dir, "src")
         self.generated_files = []
+
+    def __setup_libyang_ctx(self, yang_dir: str):
+        self.ctx = libyang.Context(yang_dir)
+
+        # access configurations
+        yang_cfg = self.config.get_yang_configuration()
+        mod_cfg = yang_cfg.get_modules_configuration()
+
+        # load main module
+        self.ctx.load_module(mod_cfg.get_main_module())
+
+        # load all needed modules
+        for m in yang_cfg.get_modules_configuration().get_other_modules():
+            self.ctx.load_module(m)
+            self.ctx.get_module(m).feature_enable_all()
+
+        # use main module for plugin generation
+        self.ly_mod = self.ctx.get_module(mod_cfg.get_main_module())
+
+        # enable all features
+        self.ly_mod.feature_enable_all()
+
+        self.logger.info("Loaded module {}".format((self.ly_mod.name())))
+        self.logger.info(
+            "Other modules loaded into the libyang context: {}".format(mod_cfg.get_other_modules()))
+
+    def __setup_jinja2_env(self):
+        self.jinja_env = jinja2.Environment(
+            loader=jinja2.FileSystemLoader("templates/cpp/"),
+            autoescape=jinja2.select_autoescape(),
+            trim_blocks=True,
+            lstrip_blocks=True
+        )
 
     def generate_directories(self):
         cmake_modules_dir = os.path.join(self.out_dir, "CMakeModules")
