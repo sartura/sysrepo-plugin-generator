@@ -70,6 +70,20 @@ class CPPGenerator(Generator):
         self.source_dir = os.path.join(out_dir, "src")
         self.generated_files = []
 
+        self.change_sub_walker = ChangeSubscriptionWalker(
+            self.config.get_prefix(), self.ly_mod.children(), self.config.get_yang_configuration().get_prefix_configuration())
+
+        # run walkers
+        walkers = [
+            self.change_sub_walker
+        ]
+
+        for walker in walkers:
+            walker.walk()
+
+        self.logger.info("Change subs: {}".format(
+            self.change_sub_walker.get_callbacks()))
+
     def __setup_libyang_ctx(self, yang_dir: str):
         self.ctx = libyang.Context(yang_dir)
 
@@ -110,8 +124,8 @@ class CPPGenerator(Generator):
             self.source_dir,
             plugin_dir,
             cmake_modules_dir,
-            os.path.join(plugin_dir, "subscription"),
-            os.path.join(plugin_dir, "startup"),
+            os.path.join(plugin_dir, "sub"),
+            os.path.join(plugin_dir, "yang"),
             os.path.join(plugin_dir, "api"),
             os.path.join(plugin_dir, "data"),
         ]
@@ -131,12 +145,27 @@ class CPPGenerator(Generator):
 
             shutil.copyfile(src_path, dst_path)
 
+    def __generate_file(self, file, **kwargs):
+        template = self.jinja_env.get_template("{}.jinja2".format(file))
+
+        path = os.path.join(self.out_dir, file)
+        self.generated_files.append(file)
+        self.logger.info("Generating {}".format(path))
+
+        with open(path, "w") as file:
+            file.write(template.render(kwargs))
+
     def generate_files(self):
-        pass
+        self.__generate_file("src/core/sub/change.hpp", root_namespace=self.config.get_prefix().replace("_", "::"),
+                             change_callbacks=self.change_sub_walker.get_callbacks())
+        self.__generate_file("src/core/sub/change.cpp", root_namespace=self.config.get_prefix().replace("_", "::"),
+                             change_callbacks=self.change_sub_walker.get_callbacks())
 
     def apply_formatting(self):
         self.logger.info("Applying .clang-format style")
+
         if shutil.which("clang-format") is not None:
+            self.logger.info("clang-format found!")
             # copy the used clang-format file into the source directory and apply it to all generated files
             src_path = "templates/common/.clang-format"
             dst_path = os.path.join(self.out_dir, ".clang-format")
@@ -145,8 +174,8 @@ class CPPGenerator(Generator):
 
             for gen in self.generated_files:
                 # run clang-format command
-                if gen[-1:] == "c" or gen[-1:] == "h":
-                    self.logger.info("Applying style to {}".format(gen))
+                if gen[-3:] == "cpp" or gen[-3:] == "hpp":
+                    self.logger.info("Running clang-format on {}".format(gen))
                     params = ["clang-format", "-style=file",
                               os.path.join(self.out_dir, gen)]
                     output = subprocess.check_output(params)

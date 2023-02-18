@@ -11,3 +11,5 @@ identityref = "char *"
 [yang.prefix]
 ntp = "ntp"
 dns_resolver = "dns"
+radius = "radius"
+authentication = "auth"
