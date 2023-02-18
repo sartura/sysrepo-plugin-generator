@@ -81,9 +81,6 @@ class CPPGenerator(Generator):
         for walker in walkers:
             walker.walk()
 
-        self.logger.info("Change subs: {}".format(
-            self.change_sub_walker.get_callbacks()))
-
     def __setup_libyang_ctx(self, yang_dir: str):
         self.ctx = libyang.Context(yang_dir)
 
