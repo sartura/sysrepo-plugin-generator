@@ -10,8 +10,13 @@ from core.generator import Generator
 
 from core.log.filters import DebugLevelFilter, InfoLevelFilter
 
+from .walkers.sub.change import ChangeSubscriptionWalker
+
 
 class CPPGenerator(Generator):
+    # walkers
+    change_sub_walker: ChangeSubscriptionWalker
+
     # logger
     logger: logging.Logger
 
