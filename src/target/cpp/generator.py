@@ -1,9 +1,10 @@
 from typing import Dict, Any
 
 from core.config import GeneratorConfiguration
+from core.generator import Generator
 
 
-class CPPGenerator:
+class CPPGenerator(Generator):
     def __init__(self, yang_dir: str, out_dir: str, config: GeneratorConfiguration):
         super().__init__(yang_dir, out_dir, config)
 
