@@ -6,7 +6,7 @@ namespace sub::change {
 // sysrepo-plugin-generator: Generated callback for path {{cb.path}}
 sr::ErrorCode {{cb.sufix}}_module_change_cb(sr::Session session, uint32_t subscriptionId, std::string_view moduleName, std::optional<std::string_view> subXPath, sr::Event event, uint32_t requestId) {
     sr::ErrorCode error = sr::ErrorCode::Ok;
-    return static_cast<int>(error);
+    return error;
 }
 
 {% endfor %}
