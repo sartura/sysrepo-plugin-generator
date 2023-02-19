@@ -18,6 +18,8 @@ from .walkers.sub.change import ChangeSubscriptionWalker
 from .walkers.sub.oper import OperSubscriptionWalker
 from .walkers.sub.rpc import RPCSubscriptionWalker
 
+from core.utils import to_camel_case
+
 
 class CPPGenerator(Generator):
     # walkers
@@ -168,21 +170,21 @@ class CPPGenerator(Generator):
     def __generate_sub_files(self):
         # module change subscriptions
         self.__generate_file("src/core/sub/change.hpp", root_namespace=self.config.get_prefix().replace("_", "::"),
-                             change_callbacks=self.change_sub_walker.get_callbacks())
+                             change_callbacks=self.change_sub_walker.get_callbacks(), to_camel_case=to_camel_case)
         self.__generate_file("src/core/sub/change.cpp", root_namespace=self.config.get_prefix().replace("_", "::"),
-                             change_callbacks=self.change_sub_walker.get_callbacks())
+                             change_callbacks=self.change_sub_walker.get_callbacks(), to_camel_case=to_camel_case)
 
         # operational subscriptions
         self.__generate_file("src/core/sub/oper.hpp", root_namespace=self.config.get_prefix().replace("_", "::"),
                              oper_callbacks=self.oper_sub_walker.get_callbacks())
         self.__generate_file("src/core/sub/oper.cpp", root_namespace=self.config.get_prefix().replace("_", "::"),
-                             oper_callbacks=self.oper_sub_walker.get_callbacks())
+                             oper_callbacks=self.oper_sub_walker.get_callbacks(), to_camel_case=to_camel_case)
 
         # rpc/action subscriptions
         self.__generate_file("src/core/sub/rpc.hpp", root_namespace=self.config.get_prefix().replace("_", "::"),
-                             rpc_callbacks=self.rpc_sub_walker.get_callbacks())
+                             rpc_callbacks=self.rpc_sub_walker.get_callbacks(), to_camel_case=to_camel_case)
         self.__generate_file("src/core/sub/rpc.cpp", root_namespace=self.config.get_prefix().replace("_", "::"),
-                             rpc_callbacks=self.rpc_sub_walker.get_callbacks())
+                             rpc_callbacks=self.rpc_sub_walker.get_callbacks(), to_camel_case=to_camel_case)
 
     def generate_files(self):
         self.__generate_sub_files()

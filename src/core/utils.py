@@ -49,6 +49,11 @@ def to_c_variable(s):
     return s.replace('-', '_')
 
 
+def to_camel_case(snake_case):
+    components = snake_case.split('_')
+    return components[0].title() + "".join(x.title() for x in components[1:])
+
+
 def has_children(node):
     return hasattr(node, "children")
 
