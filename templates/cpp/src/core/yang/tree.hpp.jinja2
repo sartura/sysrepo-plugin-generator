@@ -1,0 +1,44 @@
+#pragma once
+
+#include <optional>
+#include <string>
+
+#include <libyang-cpp/DataNode.hpp>
+
+namespace ly = libyang;
+
+namespace {{root_namespace}} {
+namespace yang::tree {
+{% for fn in yang_tree_functions %}
+// sysrepo-plugin-generator: Generated yang tree function for path {{fn.path}}
+    {% if fn.node.nodetype() == LyNode.CONTAINER %}
+    {% if fn.parent_node %}
+std::optional<ly::DataNode> Create{{ to_camel_case(  to_c_variable(  fn.get_name()  )  ) }}Container(ly::DataNode &{{to_c_variable(fn.parent_node.name())}});
+    {% else %}
+std::optional<ly::DataNode> Create{{ to_camel_case(  to_c_variable(  fn.node.name()  )  ) }}Container();
+    {% endif %}
+    {% endif %}
+    {% if fn.node.nodetype() == LyNode.LIST %}
+std::optional<ly::DataNode> Create{{to_camel_case(  to_c_variable(  fn.get_name()  )  ) }}List(
+        ly::DataNode &{{to_c_variable(fn.parent_node.name())}}
+        {% for key in fn.node.keys() %}
+            , const std::string& {{to_c_variable(key.name())}}
+        {% endfor %}
+);
+    {% endif %}
+    {% if fn.node.nodetype() == LyNode.LEAFLIST %}
+std::optional<ly::DataNode> Create{{to_camel_case(  to_c_variable(  fn.get_name()  )  ) }}LeafList(
+    ly::DataNode &{{to_c_variable(fn.parent_node.name())}}, 
+    const std::string& {{to_c_variable(fn.node.name())}}
+);
+    {% endif %}
+    {% if fn.node.nodetype() == LyNode.LEAF %}
+std::optional<ly::DataNode> Create{{to_camel_case(  to_c_variable(  fn.get_name()  )  ) }}Leaf(
+    ly::DataNode &{{to_c_variable(fn.parent_node.name())}}, 
+    const std::string& {{to_c_variable(fn.node.name())}}
+);
+    {% endif %}
+
+{% endfor %}
+}
+}

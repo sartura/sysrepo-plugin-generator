@@ -3,15 +3,18 @@ import os
 
 
 class LibyangTreeFunction:
-    def __init__(self, prefix, parent_node, node):
+    def __init__(self, prefix, parent_node, node, path=None):
         self.prefix = prefix
         self.parent_node = parent_node
         self.node = node
+        self.path = path
         self.name = to_c_variable(node.name())
         self.parent_name = to_c_variable(
             parent_node.name()) if parent_node else None
 
     def get_name(self):
+        if self.prefix is None:
+            return self.name
         return self.prefix + "_" + self.name
 
     def __repr__(self):

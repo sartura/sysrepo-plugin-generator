@@ -19,7 +19,9 @@ from .walkers.sub.oper import OperSubscriptionWalker
 from .walkers.sub.rpc import RPCSubscriptionWalker
 from .walkers.yang.tree import YangTreeWalker
 
-from core.utils import to_camel_case
+from core.utils import to_camel_case, to_c_variable
+
+from libyang.schema import Node as LyNode
 
 
 class CPPGenerator(Generator):
@@ -195,13 +197,12 @@ class CPPGenerator(Generator):
 
     def __generate_yang_files(self):
         # yang tree API
-        # self.__generate_file("src/core/yang/tree.hpp", root_namespace=self.config.get_prefix().replace("_", "::"),
-        #                      to_camel_case=to_camel_case)
-        # self.__generate_file("src/core/yang/tree.cpp", root_namespace=self.config.get_prefix().replace("_", "::"),
-        #                      to_camel_case=to_camel_case)
+        self.__generate_file("src/core/yang/tree.hpp", root_namespace=self.config.get_prefix().replace("_", "::"),
+                             yang_tree_functions=self.yang_tree_walker.get_functions(), to_camel_case=to_camel_case, LyNode=LyNode, to_c_variable=to_c_variable)
+        self.__generate_file("src/core/yang/tree.cpp", root_namespace=self.config.get_prefix().replace("_", "::"),
+                             yang_tree_functions=self.yang_tree_walker.get_functions(), to_camel_case=to_camel_case, LyNode=LyNode, to_c_variable=to_c_variable)
 
         # yang paths variables
-        pass
 
     def generate_files(self):
         self.__generate_sub_files()

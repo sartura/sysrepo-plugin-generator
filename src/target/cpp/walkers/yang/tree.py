@@ -56,13 +56,14 @@ class YangTreeWalker(Walker):
 
         if node.nodetype() == LyNode.LEAF or node.nodetype() == LyNode.LEAFLIST or node.nodetype() == LyNode.LIST:
             if last_prefix is not None:
+                print("Node: {}, prefix: {}".format(node.name(), last_prefix))
                 # self.ctx.callbacks.append(
                 #     Callback(node.data_path(), to_c_variable(last_prefix + "_" + node.name())))
-                self.ctx.add_function(LibyangTreeFunction(to_c_variable(
-                    last_prefix + "_" + node.name()), self.ctx.get_parent(depth), node))
+                self.ctx.add_function(LibyangTreeFunction(
+                    last_prefix, self.ctx.get_parent(depth), node, node.data_path()))
             else:
-                self.ctx.add_function(LibyangTreeFunction(to_c_variable(
-                    node.name()), self.ctx.get_parent(depth), node))
+                self.ctx.add_function(LibyangTreeFunction(
+                    None, self.ctx.get_parent(depth), node, node.data_path()))
             return True
         else:
             c_var = to_c_variable(node.name())
@@ -76,8 +77,8 @@ class YangTreeWalker(Walker):
                 self.ctx.add_prefix(depth, None)
             # also add containers to the tree
             self.ctx.add_parent(depth, node)
-            self.ctx.add_function(LibyangTreeFunction(to_c_variable(
-                node.name()), self.ctx.get_parent(depth), node))
+            self.ctx.add_function(LibyangTreeFunction(
+                last_prefix, self.ctx.get_parent(depth), node, node.data_path()))
 
         return False
 
