@@ -2,6 +2,23 @@ from libyang.schema import Node as LyNode
 import os
 
 
+class LibyangTreeFunction:
+    def __init__(self, prefix, parent_node, node):
+        self.prefix = prefix
+        self.parent_node = parent_node
+        self.node = node
+        self.name = to_c_variable(node.name())
+        self.parent_name = to_c_variable(
+            parent_node.name()) if parent_node else None
+
+    def get_name(self):
+        return self.prefix + "_" + self.name
+
+    def __repr__(self):
+        parent = self.parent_node.name() if self.parent_node != None else None
+        return "[name: {}, parent: {}, function: {}]".format(self.name, parent, self.get_name())
+
+
 class CLibrary:
     def __init__(self, outdir, name):
         deps_dir = os.path.join(outdir, "deps")

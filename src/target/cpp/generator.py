@@ -17,6 +17,7 @@ from core.log.filters import DebugLevelFilter, InfoLevelFilter
 from .walkers.sub.change import ChangeSubscriptionWalker
 from .walkers.sub.oper import OperSubscriptionWalker
 from .walkers.sub.rpc import RPCSubscriptionWalker
+from .walkers.yang.tree import YangTreeWalker
 
 from core.utils import to_camel_case
 
@@ -26,6 +27,7 @@ class CPPGenerator(Generator):
     change_sub_walker: ChangeSubscriptionWalker
     oper_sub_walker: OperSubscriptionWalker
     rpc_sub_walker: RPCSubscriptionWalker
+    yang_tree_walker: YangTreeWalker
 
     # libyang
     ly_mod: libyang.Module
@@ -82,19 +84,24 @@ class CPPGenerator(Generator):
             self.config.get_prefix(), self.ly_mod.children(), self.config.get_yang_configuration().get_prefix_configuration())
         self.rpc_sub_walker = RPCSubscriptionWalker(
             self.config.get_prefix(), self.ly_mod.children(), self.config.get_yang_configuration().get_prefix_configuration())
+        self.yang_tree_walker = YangTreeWalker(
+            self.config.get_prefix(), self.ly_mod.children(), self.config.get_yang_configuration().get_prefix_configuration())
 
         # run walkers
         walkers = [
+            # sub walkers
             self.change_sub_walker,
             self.oper_sub_walker,
-            self.rpc_sub_walker
+            self.rpc_sub_walker,
+            # yang walkers
+            self.yang_tree_walker,
         ]
 
         for walker in walkers:
             walker.walk()
 
-        self.logger.info("rpc callbacks: {}".format(
-            self.rpc_sub_walker.get_callbacks()))
+        self.logger.info("yang callbacks : {}".format(
+            self.yang_tree_walker.get_callbacks()))
 
     def __setup_libyang_ctx(self, yang_dir: str):
         self.ctx = libyang.Context(yang_dir)
@@ -186,8 +193,19 @@ class CPPGenerator(Generator):
         self.__generate_file("src/core/sub/rpc.cpp", root_namespace=self.config.get_prefix().replace("_", "::"),
                              rpc_callbacks=self.rpc_sub_walker.get_callbacks(), to_camel_case=to_camel_case)
 
+    def __generate_yang_files(self):
+        # yang tree API
+        # self.__generate_file("src/core/yang/tree.hpp", root_namespace=self.config.get_prefix().replace("_", "::"),
+        #                      to_camel_case=to_camel_case)
+        # self.__generate_file("src/core/yang/tree.cpp", root_namespace=self.config.get_prefix().replace("_", "::"),
+        #                      to_camel_case=to_camel_case)
+
+        # yang paths variables
+        pass
+
     def generate_files(self):
         self.__generate_sub_files()
+        self.__generate_yang_files()
 
     def apply_formatting(self):
         self.logger.info("Applying .clang-format style")
