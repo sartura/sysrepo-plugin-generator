@@ -4,8 +4,8 @@ namespace {{root_namespace}} {
 namespace sub::rpc {
 {% for cb in rpc_callbacks %}
 // sysrepo-plugin-generator: Generated RPC/action callback for path {{cb.path}}
-sr::ErrorCode {{to_camel_case(cb.sufix)}}RpcCb(Session session, uint32_t subscriptionId, std::string_view path, const libyang::DataNode input, Event event, uint32_t requestId, libyang::DataNode output) {
-    sr::ErrorCode rc = sr::ErrorCode::OK;
+sr::ErrorCode {{to_camel_case(cb.sufix)}}RpcCb(sr::Session session, uint32_t subscriptionId, std::string_view path, const ly::DataNode input, sr::Event event, uint32_t requestId, ly::DataNode output) {
+    sr::ErrorCode error = sr::ErrorCode::Ok;
     return error;
 }
 

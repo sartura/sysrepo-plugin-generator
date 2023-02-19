@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.0)
-project({{project_name}} LANGUAGES C++)
+project({{project_name}})
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMakeModules")
+
+set(PLUGIN_LIRBARY_NAME {{project_name}})
 
 find_package(SYSREPOCPP REQUIRED)
 find_package(LIBYANGCPP REQUIRED)
@@ -18,14 +20,18 @@ include_directories(
 set(
     PLUGIN_HEADERS
 
-    src/plugin.hpp
+{% for header in headers %}
+    {{header}}
+{% endfor %}
 )
 
 
 set(
     PLUGIN_SOURCES
 
-    src/plugin.cpp
+{% for src in sources %}
+    {{src}}
+{% endfor %}
 )
 
 add_library(

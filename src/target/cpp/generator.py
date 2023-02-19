@@ -204,9 +204,23 @@ class CPPGenerator(Generator):
 
         # yang paths variables
 
+    def __generate_cmake_files(self):
+        # CMakeLists.txt
+        print(self.generated_files)
+        self.__generate_file("CMakeLists.txt", project_name="{}-plugin".format(self.config.get_yang_configuration().get_modules_configuration().get_main_module()),
+                             sources=[
+                                 f for f in self.generated_files if f[-3:] == "cpp"],
+                             headers=[
+                                 f for f in self.generated_files if f[-3:] == "cpp"],
+                             source_dir="src",
+                             to_camel_case=to_camel_case
+                             )
+        pass
+
     def generate_files(self):
         self.__generate_sub_files()
         self.__generate_yang_files()
+        self.__generate_cmake_files()
 
     def apply_formatting(self):
         self.logger.info("Applying .clang-format style")
