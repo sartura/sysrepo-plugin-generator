@@ -176,7 +176,7 @@ class CPPGenerator(Generator):
 
         # operational subscriptions
         self.__generate_file("src/core/sub/oper.hpp", root_namespace=self.config.get_prefix().replace("_", "::"),
-                             oper_callbacks=self.oper_sub_walker.get_callbacks())
+                             oper_callbacks=self.oper_sub_walker.get_callbacks(), to_camel_case=to_camel_case)
         self.__generate_file("src/core/sub/oper.cpp", root_namespace=self.config.get_prefix().replace("_", "::"),
                              oper_callbacks=self.oper_sub_walker.get_callbacks(), to_camel_case=to_camel_case)
 
