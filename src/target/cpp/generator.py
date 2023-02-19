@@ -100,8 +100,8 @@ class CPPGenerator(Generator):
         for walker in walkers:
             walker.walk()
 
-        self.logger.info("yang callbacks : {}".format(
-            self.yang_tree_walker.get_callbacks()))
+        [self.logger.info("ly tree function : {} => {}".format(
+            fn.parent_node, fn.node.name())) for fn in self.yang_tree_walker.get_functions()]
 
     def __setup_libyang_ctx(self, yang_dir: str):
         self.ctx = libyang.Context(yang_dir)
