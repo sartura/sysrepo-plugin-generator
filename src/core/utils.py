@@ -69,9 +69,11 @@ def to_c_variable(s):
     return s.replace('-', '_')
 
 
-def to_camel_case(snake_case):
+def to_camel_case(snake_case, first_upper: bool = False):
     components = snake_case.split('_')
-    return components[0].title() + "".join(x.title() for x in components[1:])
+    if first_upper:
+        return components[0].title() + "".join(x.title() for x in components[1:])
+    return components[0] + "".join(x.title() for x in components[1:])
 
 
 def has_children(node):

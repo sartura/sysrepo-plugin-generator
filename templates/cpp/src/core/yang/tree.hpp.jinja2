@@ -13,13 +13,13 @@ namespace yang::tree {
 // sysrepo-plugin-generator: Generated yang tree function for path {{fn.path}}
     {% if fn.node.nodetype() == LyNode.CONTAINER %}
     {% if fn.parent_node %}
-std::optional<ly::DataNode> Create{{ to_camel_case(  to_c_variable(  fn.get_name()  )  ) }}Container(ly::DataNode &{{to_c_variable(fn.parent_node.name())}});
+std::optional<ly::DataNode> create{{ to_camel_case(  to_c_variable(  fn.get_name()  ), True  ) }}Container(ly::DataNode &{{to_c_variable(fn.parent_node.name())}});
     {% else %}
-std::optional<ly::DataNode> Create{{ to_camel_case(  to_c_variable(  fn.node.name()  )  ) }}Container();
+std::optional<ly::DataNode> create{{ to_camel_case(  to_c_variable(  fn.node.name()  ), True  ) }}Container();
     {% endif %}
     {% endif %}
     {% if fn.node.nodetype() == LyNode.LIST %}
-std::optional<ly::DataNode> Create{{to_camel_case(  to_c_variable(  fn.get_name()  )  ) }}List(
+std::optional<ly::DataNode> create{{to_camel_case(  to_c_variable(  fn.get_name()  ), True  ) }}List(
         ly::DataNode &{{to_c_variable(fn.parent_node.name())}}
         {% for key in fn.node.keys() %}
             , const std::string& {{to_c_variable(key.name())}}
@@ -27,13 +27,13 @@ std::optional<ly::DataNode> Create{{to_camel_case(  to_c_variable(  fn.get_name(
 );
     {% endif %}
     {% if fn.node.nodetype() == LyNode.LEAFLIST %}
-std::optional<ly::DataNode> Create{{to_camel_case(  to_c_variable(  fn.get_name()  )  ) }}LeafList(
+std::optional<ly::DataNode> create{{to_camel_case(  to_c_variable(  fn.get_name()  ), True  ) }}LeafList(
     ly::DataNode &{{to_c_variable(fn.parent_node.name())}}, 
     const std::string& {{to_c_variable(fn.node.name())}}
 );
     {% endif %}
     {% if fn.node.nodetype() == LyNode.LEAF %}
-std::optional<ly::DataNode> Create{{to_camel_case(  to_c_variable(  fn.get_name()  )  ) }}Leaf(
+std::optional<ly::DataNode> create{{to_camel_case(  to_c_variable(  fn.get_name()  ), True  ) }}Leaf(
     ly::DataNode &{{to_c_variable(fn.parent_node.name())}}, 
     const std::string& {{to_c_variable(fn.node.name())}}
 );
