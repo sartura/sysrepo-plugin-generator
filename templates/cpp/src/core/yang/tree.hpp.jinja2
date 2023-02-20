@@ -10,15 +10,39 @@ namespace ly = libyang;
 namespace {{root_namespace}} {
 namespace yang::tree {
 {% for fn in yang_tree_functions %}
-// sysrepo-plugin-generator: Generated yang tree function for path {{fn.path}}
     {% if fn.node.nodetype() == LyNode.CONTAINER %}
     {% if fn.parent_node %}
+/**
+ * sysrepo-plugin-generator: Generated yang tree function for path {{fn.path}}
+ *
+ * @param {{to_c_variable(fn.parent_node.name())}} Parent of the node being created.
+ *
+ * @return Returns the first created node. If no nodes were created, returns std::nullopt.
+ *
+ */
 std::optional<ly::DataNode> create{{ to_camel_case(  to_c_variable(  fn.get_name()  ), True  ) }}Container(ly::DataNode &{{to_c_variable(fn.parent_node.name())}});
     {% else %}
+/**
+ * sysrepo-plugin-generator: Generated yang tree function for path {{fn.path}}
+ *
+ * @return Returns the first created node. If no nodes were created, returns std::nullopt.
+ *
+ */
 std::optional<ly::DataNode> create{{ to_camel_case(  to_c_variable(  fn.node.name()  ), True  ) }}Container();
     {% endif %}
     {% endif %}
     {% if fn.node.nodetype() == LyNode.LIST %}
+/**
+ * sysrepo-plugin-generator: Generated yang tree function for path {{fn.path}}
+ *
+ * @param {{to_c_variable(fn.parent_node.name())}} Parent of the node being created.
+ {% for key in fn.node.keys() %}
+ * @param {{to_c_variable(key.name())}} Key value for key {{key.name()}}.
+ {% endfor %}
+ *
+ * @return Returns the first created node. If no nodes were created, returns std::nullopt.
+ *
+ */
 std::optional<ly::DataNode> create{{to_camel_case(  to_c_variable(  fn.get_name()  ), True  ) }}List(
         ly::DataNode &{{to_c_variable(fn.parent_node.name())}}
         {% for key in fn.node.keys() %}
@@ -27,12 +51,30 @@ std::optional<ly::DataNode> create{{to_camel_case(  to_c_variable(  fn.get_name(
 );
     {% endif %}
     {% if fn.node.nodetype() == LyNode.LEAFLIST %}
+/**
+ * sysrepo-plugin-generator: Generated yang tree function for path {{fn.path}}
+ *
+ * @param {{to_c_variable(fn.parent_node.name())}} Parent of the node being created.
+ * @param {{to_c_variable(fn.node.name())}} Value of the leaf-list element.
+ *
+ * @return Returns the first created node. If no nodes were created, returns std::nullopt.
+ *
+ */
 std::optional<ly::DataNode> create{{to_camel_case(  to_c_variable(  fn.get_name()  ), True  ) }}LeafList(
     ly::DataNode &{{to_c_variable(fn.parent_node.name())}}, 
     const std::string& {{to_c_variable(fn.node.name())}}
 );
     {% endif %}
     {% if fn.node.nodetype() == LyNode.LEAF %}
+/**
+ * sysrepo-plugin-generator: Generated yang tree function for path {{fn.path}}
+ *
+ * @param {{to_c_variable(fn.parent_node.name())}} Parent of the node being created.
+ * @param {{to_c_variable(fn.node.name())}} Value of the leaf element.
+ *
+ * @return Returns the first created node. If no nodes were created, returns std::nullopt.
+ *
+ */
 std::optional<ly::DataNode> create{{to_camel_case(  to_c_variable(  fn.get_name()  ), True  ) }}Leaf(
     ly::DataNode &{{to_c_variable(fn.parent_node.name())}}, 
     const std::string& {{to_c_variable(fn.node.name())}}
