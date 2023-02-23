@@ -102,6 +102,9 @@ class CPPGenerator(Generator):
         for walker in walkers:
             walker.walk()
 
+        [self.logger.info("oper callbacks: {}".format(
+            self.oper_sub_walker.get_callbacks()))]
+
     def __setup_libyang_ctx(self, yang_dir: str):
         self.ctx = libyang.Context(yang_dir)
 
@@ -173,6 +176,10 @@ class CPPGenerator(Generator):
         with open(path, "w") as file:
             file.write(template.render(kwargs))
 
+    def __generate_core_files(self):
+        self.__generate_file(
+            "src/core/context.hpp", root_namespace=self.config.get_prefix().replace("_", "::"))
+
     def __generate_sub_files(self):
         # module change subscriptions
         self.__generate_file("src/core/sub/change.hpp", root_namespace=self.config.get_prefix().replace("_", "::"),
@@ -215,6 +222,7 @@ class CPPGenerator(Generator):
         pass
 
     def generate_files(self):
+        self.__generate_core_files()
         self.__generate_sub_files()
         self.__generate_yang_files()
         self.__generate_cmake_files()

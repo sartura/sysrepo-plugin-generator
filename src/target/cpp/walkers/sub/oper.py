@@ -39,14 +39,15 @@ class OperSubscriptionWalker(Walker):
         if depth in self.ctx.prefix_stack:
             last_prefix = self.ctx.prefix_stack[depth]
 
-        if node.nodetype() == LyNode.LEAF or node.nodetype() == LyNode.LEAFLIST or node.nodetype() == LyNode.LIST:
-            if last_prefix is not None:
-                self.ctx.callbacks.append(
-                    Callback(node.data_path(), to_c_variable(last_prefix + "_" + node.name())))
-            else:
-                self.ctx.callbacks.append(
-                    Callback(node.data_path(), to_c_variable(node.name())))
-            return True
+        if node.nodetype() == LyNode.LEAF or node.nodetype() == LyNode.LEAFLIST:
+            if node.config_false():
+                if last_prefix is not None:
+                    self.ctx.callbacks.append(
+                        Callback(node.data_path(), to_c_variable(last_prefix + "_" + node.name())))
+                else:
+                    self.ctx.callbacks.append(
+                        Callback(node.data_path(), to_c_variable(node.name())))
+                return True
         else:
             c_var = to_c_variable(node.name())
             if self.prefix_cfg.check_prefix(c_var):
@@ -61,7 +62,7 @@ class OperSubscriptionWalker(Walker):
         return False
 
     def add_node(self, node):
-        return not node.nodetype() == LyNode.RPC and not node.nodetype() == LyNode.ACTION and not node.nodetype() == LyNode.NOTIF and node.config_false() and not node.deprecated() and not node.obsolete()
+        return not node.nodetype() == LyNode.RPC and not node.nodetype() == LyNode.ACTION and not node.nodetype() == LyNode.NOTIF and not node.deprecated() and not node.obsolete()
 
     def get_callbacks(self):
         return list(reversed(self.ctx.callbacks))

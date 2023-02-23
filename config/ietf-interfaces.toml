@@ -1,5 +1,5 @@
 [generator]
-prefix = "ietf_if"
+prefix = "ietf_ifc"
 
 [yang.modules]
 main = "ietf-interfaces"
@@ -9,3 +9,8 @@ other = ["ietf-ip"]
 identityref = "char *"
 
 [yang.prefix]
+statistics = "stats"
+address = "addr"
+neighbor = "neigh"
+ipv4 = "ipv4"
+ipv6 = "ipv6"
