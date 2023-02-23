@@ -4,7 +4,18 @@ namespace {{root_namespace}} {
 namespace sub::change {
 {% for cb in change_callbacks %}
 /**
- * sysrepo-plugin-generator: Generated module change callback for path {{cb.path}}
+ * sysrepo-plugin-generator: Generated default constructor.
+ *
+ * @param ctx Plugin module change context.
+ *
+ */
+{{to_camel_case(cb.sufix, True)}}ModuleChangeCb::{{to_camel_case(cb.sufix, True)}}ModuleChangeCb(std::shared_ptr<{{root_namespace}}::ModuleChangeCtx> ctx)
+{
+    m_ctx = ctx;
+}
+
+/**
+ * sysrepo-plugin-generator: Generated module change operator() for path {{cb.path}}
  *
  * @param session An implicit session for the callback.
  * @param subscriptionId ID the subscription associated with the callback.
@@ -17,7 +28,8 @@ namespace sub::change {
  * @return Error code.
  *
  */
-sr::ErrorCode {{to_camel_case(cb.sufix)}}ModuleChangeCb(sr::Session session, uint32_t subscriptionId, std::string_view moduleName, std::optional<std::string_view> subXPath, sr::Event event, uint32_t requestId) {
+sr::ErrorCode {{to_camel_case(cb.sufix, True)}}ModuleChangeCb::operator()(sr::Session session, uint32_t subscriptionId, std::string_view moduleName, std::optional<std::string_view> subXPath, sr::Event event, uint32_t requestId)
+{
     sr::ErrorCode error = sr::ErrorCode::Ok;
     return error;
 }

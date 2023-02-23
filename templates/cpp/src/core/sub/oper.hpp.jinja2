@@ -16,7 +16,7 @@ namespace {{root_namespace}} {
 namespace sub::oper {
 {% for cb in oper_callbacks %}
 /**
- * @brief sysrepo-plugin-generator: Generated functor for path {{cb.path}}.
+ * @brief sysrepo-plugin-generator: Generated operational get functor for path {{cb.path}}.
  */
 class {{to_camel_case(cb.sufix, True)}}OperGetCb {
     public:
@@ -29,7 +29,7 @@ class {{to_camel_case(cb.sufix, True)}}OperGetCb {
         {{to_camel_case(cb.sufix, True)}}OperGetCb(std::shared_ptr<{{root_namespace}}::OperCtx> ctx);
 
         /**
-         * sysrepo-plugin-generator: Generated operator() for path {{cb.path}}
+         * sysrepo-plugin-generator: Generated operational get operator() for path {{cb.path}}
          *
          * @param session An implicit session for the callback.
          * @param subscriptionId ID the subscription associated with the callback.

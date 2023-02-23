@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core/context.hpp"
+
 #include <iostream>
 #include <optional>
 #include <string_view>
@@ -12,20 +14,37 @@ namespace {{root_namespace}} {
 namespace sub::change {
 {% for cb in change_callbacks %}
 /**
- * sysrepo-plugin-generator: Generated module change callback for path {{cb.path}}
- *
- * @param session An implicit session for the callback.
- * @param subscriptionId ID the subscription associated with the callback.
- * @param moduleName The module name used for subscribing.
- * @param subXPath The optional xpath used at the time of subscription.
- * @param event Type of the event that has occured.
- * @param requestId Request ID unique for the specific module_name. Connected events for one request (SR_EV_CHANGE and
- * SR_EV_DONE, for example) have the same request ID.
- *
- * @return Error code.
- *
+ * @brief sysrepo-plugin-generator: Generated module change functor for path {{cb.path}}.
  */
-sr::ErrorCode {{to_camel_case(cb.sufix)}}ModuleChangeCb(sr::Session session, uint32_t subscriptionId, std::string_view moduleName, std::optional<std::string_view> subXPath, sr::Event event, uint32_t requestId);
+class {{to_camel_case(cb.sufix, True)}}ModuleChangeCb {
+    public:
+        /**
+         * sysrepo-plugin-generator: Generated default constructor.
+         *
+         * @param ctx Plugin module change context.
+         *
+         */
+        {{to_camel_case(cb.sufix, True)}}ModuleChangeCb(std::shared_ptr<{{root_namespace}}::ModuleChangeCtx> ctx);
+
+        /**
+         * sysrepo-plugin-generator: Generated module change operator() for path {{cb.path}}
+         *
+         * @param session An implicit session for the callback.
+         * @param subscriptionId ID the subscription associated with the callback.
+         * @param moduleName The module name used for subscribing.
+         * @param subXPath The optional xpath used at the time of subscription.
+         * @param event Type of the event that has occured.
+         * @param requestId Request ID unique for the specific module_name. Connected events for one request (SR_EV_CHANGE and
+         * SR_EV_DONE, for example) have the same request ID.
+         *
+         * @return Error code.
+         *
+         */
+        sr::ErrorCode operator()(sr::Session session, uint32_t subscriptionId, std::string_view moduleName, std::optional<std::string_view> subXPath, sr::Event event, uint32_t requestId);
+
+    private:
+        std::shared_ptr<{{root_namespace}}::ModuleChangeCtx> m_ctx;
+};
 
 {% endfor %}
 }
