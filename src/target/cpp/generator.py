@@ -179,6 +179,8 @@ class CPPGenerator(Generator):
     def __generate_core_files(self):
         self.__generate_file(
             "src/core/context.hpp", root_namespace=self.config.get_prefix().replace("_", "::"))
+        self.__generate_file(
+            "src/core/context.cpp", root_namespace=self.config.get_prefix().replace("_", "::"))
 
     def __generate_sub_files(self):
         # module change subscriptions
@@ -209,8 +211,10 @@ class CPPGenerator(Generator):
         # yang paths variables
 
     def __generate_plugin_files(self):
-        self.__generate_file("src/plugin.hpp")
-        self.__generate_file("src/plugin.cpp")
+        self.__generate_file(
+            "src/plugin.hpp", root_namespace=self.config.get_prefix().replace("_", "::"))
+        self.__generate_file(
+            "src/plugin.cpp", root_namespace=self.config.get_prefix().replace("_", "::"))
 
     def __generate_cmake_files(self):
         # CMakeLists.txt
