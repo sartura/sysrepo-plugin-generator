@@ -7,7 +7,13 @@ namespace {{root_namespace}} {
  * @param sess Plugin session from the plugin init callback.
  *
  */
-PluginCtx::PluginCtx(sysrepo::Session sess) : m_sess(sess) {}
+PluginCtx::PluginCtx(sysrepo::Session sess) : m_sess(sess)
+{
+    m_operCtx = std::make_shared<OperCtx>();
+    m_moduleChangeCtx = std::make_shared<ModuleChangeCtx>();
+    m_rpcCtx = std::make_shared<RPCCtx>();
+    m_notifCtx = std::make_shared<NotifCtx>();
+}
 
 /**
  * sysrepo-plugin-generator: Generated getter for the plugin session.
@@ -25,7 +31,7 @@ sysrepo::Session& PluginCtx::getSession() {
  * @return Operational data context.
  *
  */
-OperCtx& PluginCtx::getOperCtx() {
+std::shared_ptr<OperCtx>& PluginCtx::getOperCtx() {
     return m_operCtx;
 }
 
@@ -35,7 +41,7 @@ OperCtx& PluginCtx::getOperCtx() {
  * @return Module change context.
  *
  */
-ModuleChangeCtx& PluginCtx::getModuleChangeCtx() {
+std::shared_ptr<ModuleChangeCtx>& PluginCtx::getModuleChangeCtx() {
     return m_moduleChangeCtx;
 }
 
@@ -45,7 +51,7 @@ ModuleChangeCtx& PluginCtx::getModuleChangeCtx() {
  * @return RPC context.
  *
  */
-RPCCtx& PluginCtx::getRPCCtx() {
+std::shared_ptr<RPCCtx>& PluginCtx::getRPCCtx() {
     return m_rpcCtx;
 }
 
@@ -55,7 +61,7 @@ RPCCtx& PluginCtx::getRPCCtx() {
  * @return Notification context.
  *
  */
-NotifCtx& PluginCtx::getNotifCtx() {
+std::shared_ptr<NotifCtx>& PluginCtx::getNotifCtx() {
     return m_notifCtx;
 }
 

@@ -74,7 +74,7 @@ public:
      * @return Operational data context.
      *
      */
-    OperCtx& getOperCtx();
+    std::shared_ptr<OperCtx>& getOperCtx();
 
     /**
      * sysrepo-plugin-generator: Generated getter for the module change context.
@@ -82,7 +82,7 @@ public:
      * @return Module change context.
      *
      */
-    ModuleChangeCtx& getModuleChangeCtx();
+    std::shared_ptr<ModuleChangeCtx>& getModuleChangeCtx();
 
     /**
      * sysrepo-plugin-generator: Generated getter for the RPC context.
@@ -90,7 +90,7 @@ public:
      * @return RPC context.
      *
      */
-    RPCCtx& getRPCCtx();
+    std::shared_ptr<RPCCtx>& getRPCCtx();
 
     /**
      * sysrepo-plugin-generator: Generated getter for the notification context.
@@ -98,7 +98,7 @@ public:
      * @return Notification context.
      *
      */
-    NotifCtx& getNotifCtx();
+    std::shared_ptr<NotifCtx>& getNotifCtx();
 
     /**
      * sysrepo-plugin-generator: Generated default destructor for plugin context.
@@ -109,9 +109,9 @@ private:
     sysrepo::Session m_sess; ///< Plugin session from the plugin init callback.
 
     // Contexts
-    OperCtx m_operCtx; ///< Operational data context.
-    ModuleChangeCtx m_moduleChangeCtx; ///< Module change context.
-    RPCCtx m_rpcCtx; ///< RPC context.
-    NotifCtx m_notifCtx; ///< Notification context.
+    std::shared_ptr<OperCtx> m_operCtx; ///< Operational data context.
+    std::shared_ptr<ModuleChangeCtx> m_moduleChangeCtx; ///< Module change context.
+    std::shared_ptr<RPCCtx> m_rpcCtx; ///< RPC context.
+    std::shared_ptr<NotifCtx> m_notifCtx; ///< Notification context.
 };
 }
