@@ -1,4 +1,8 @@
+#include "plugin.hpp"
+
 #include <sysrepo-cpp/Session.hpp>
+
+namespace sr = sysrepo;
 
 int sr_plugin_init_cb(sr_session_ctx_t *session, void **priv)
 {

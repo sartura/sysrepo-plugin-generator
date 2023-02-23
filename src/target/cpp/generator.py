@@ -208,6 +208,10 @@ class CPPGenerator(Generator):
 
         # yang paths variables
 
+    def __generate_plugin_files(self):
+        self.__generate_file("src/plugin.hpp")
+        self.__generate_file("src/plugin.cpp")
+
     def __generate_cmake_files(self):
         # CMakeLists.txt
         print(self.generated_files)
@@ -225,6 +229,7 @@ class CPPGenerator(Generator):
         self.__generate_core_files()
         self.__generate_sub_files()
         self.__generate_yang_files()
+        self.__generate_plugin_files()
         self.__generate_cmake_files()
 
     def apply_formatting(self):
