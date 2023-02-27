@@ -41,7 +41,7 @@ std::optional<sysrepo::Subscription>& PluginContext::getSubscriptionHandle() {
  * @return Operational data context.
  *
  */
-std::shared_ptr<OperContext>& PluginContext::getOperContext() {
+std::shared_ptr<OperContext> PluginContext::getOperContext() const {
     return m_operCtx;
 }
 
@@ -51,7 +51,7 @@ std::shared_ptr<OperContext>& PluginContext::getOperContext() {
  * @return Module change context.
  *
  */
-std::shared_ptr<ModuleChangeContext>& PluginContext::getModuleChangeContext() {
+std::shared_ptr<ModuleChangeContext> PluginContext::getModuleChangeContext() const {
     return m_changeCtx;
 }
 
@@ -61,7 +61,7 @@ std::shared_ptr<ModuleChangeContext>& PluginContext::getModuleChangeContext() {
  * @return RPC context.
  *
  */
-std::shared_ptr<RpcContext>& PluginContext::getRpcContext() {
+std::shared_ptr<RpcContext> PluginContext::getRpcContext() const {
     return m_rpcCtx;
 }
 
@@ -71,7 +71,7 @@ std::shared_ptr<RpcContext>& PluginContext::getRpcContext() {
  * @return Notification context.
  *
  */
-std::shared_ptr<NotifContext>& PluginContext::getNotifContext() {
+std::shared_ptr<NotifContext> PluginContext::getNotifContext() const {
     return m_notifCtx;
 }
 

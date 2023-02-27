@@ -82,7 +82,7 @@ public:
      * @return Operational data context.
      *
      */
-    std::shared_ptr<OperContext>& getOperContext();
+    std::shared_ptr<OperContext> getOperContext() const;
 
     /**
      * sysrepo-plugin-generator: Generated getter for the module change context.
@@ -90,7 +90,7 @@ public:
      * @return Module change context.
      *
      */
-    std::shared_ptr<ModuleChangeContext>& getModuleChangeContext();
+    std::shared_ptr<ModuleChangeContext> getModuleChangeContext() const;
 
     /**
      * sysrepo-plugin-generator: Generated getter for the RPC context.
@@ -98,7 +98,7 @@ public:
      * @return RPC context.
      *
      */
-    std::shared_ptr<RpcContext>& getRpcContext();
+    std::shared_ptr<RpcContext> getRpcContext() const;
 
     /**
      * sysrepo-plugin-generator: Generated getter for the notification context.
@@ -106,7 +106,7 @@ public:
      * @return Notification context.
      *
      */
-    std::shared_ptr<NotifContext>& getNotifContext();
+    std::shared_ptr<NotifContext> getNotifContext() const;
 
     /**
      * sysrepo-plugin-generator: Generated default destructor for plugin context.
