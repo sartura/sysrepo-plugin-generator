@@ -9,7 +9,7 @@ namespace sub::change {
  * @param ctx Plugin module change context.
  *
  */
-{{to_camel_case(cb.sufix, True)}}ModuleChangeCb::{{to_camel_case(cb.sufix, True)}}ModuleChangeCb(std::shared_ptr<{{root_namespace}}::ModuleChangeCtx> ctx)
+{{to_camel_case(cb.sufix, True)}}ModuleChangeCb::{{to_camel_case(cb.sufix, True)}}ModuleChangeCb(std::shared_ptr<{{root_namespace}}::ModuleChangeContext> ctx)
 {
     m_ctx = ctx;
 }
