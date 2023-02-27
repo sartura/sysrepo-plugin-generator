@@ -26,7 +26,7 @@ class {{to_camel_case(cb.sufix, True)}}OperGetCb {
          * @param ctx Plugin operational context.
          *
          */
-        {{to_camel_case(cb.sufix, True)}}OperGetCb(std::shared_ptr<{{root_namespace}}::OperCtx> ctx);
+        {{to_camel_case(cb.sufix, True)}}OperGetCb(std::shared_ptr<{{root_namespace}}::OperContext> ctx);
 
         /**
          * sysrepo-plugin-generator: Generated operational get operator() for path {{cb.path}}.
@@ -44,7 +44,7 @@ class {{to_camel_case(cb.sufix, True)}}OperGetCb {
         sr::ErrorCode operator()(sr::Session session, uint32_t subscriptionId, std::string_view moduleName, std::optional<std::string_view> subXPath, std::optional<std::string_view> requestXPath, uint32_t requestId, std::optional<ly::DataNode>& output);
 
     private:
-        std::shared_ptr<{{root_namespace}}::OperCtx> m_ctx;
+        std::shared_ptr<{{root_namespace}}::OperContext> m_ctx;
 };
 
 {% endfor %}

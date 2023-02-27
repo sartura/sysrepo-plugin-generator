@@ -7,12 +7,12 @@ namespace {{root_namespace}} {
  * @param sess Plugin session from the plugin init callback.
  *
  */
-PluginCtx::PluginCtx(sysrepo::Session sess) : m_sess(sess)
+PluginContext::PluginContext(sysrepo::Session sess) : m_sess(sess)
 {
-    m_operCtx = std::make_shared<OperCtx>();
-    m_moduleChangeCtx = std::make_shared<ModuleChangeCtx>();
-    m_rpcCtx = std::make_shared<RPCCtx>();
-    m_notifCtx = std::make_shared<NotifCtx>();
+    m_operCtx = std::make_shared<OperContext>();
+    m_changeCtx = std::make_shared<ModuleChangeContext>();
+    m_rpcCtx = std::make_shared<RpcContext>();
+    m_notifCtx = std::make_shared<NotifContext>();
 }
 
 /**
@@ -21,8 +21,28 @@ PluginCtx::PluginCtx(sysrepo::Session sess) : m_sess(sess)
  * @return Plugin session from the init callback.
  *
  */
-sysrepo::Session& PluginCtx::getSession() {
+sysrepo::Session& PluginContext::getSession() {
     return m_sess;
+}
+
+/**
+* sysrepo-plugin-generator: Generated setter for the subscription handle.
+*
+* @param sub Subscription handle.
+*
+*/
+void PluginContext::setSubscriptionHandle(sysrepo::Subscription sub) {
+    m_subHandle = sub;
+}
+
+/**
+ * sysrepo-plugin-generator: Generated getter for the subscription handle.
+ *
+ * @return Subscription handle.
+ *
+ */
+std::optional<sysrepo::Subscription>& PluginContext::getSubscriptionHandle() {
+    return m_subHandle;
 }
 
 /**
@@ -31,7 +51,7 @@ sysrepo::Session& PluginCtx::getSession() {
  * @return Operational data context.
  *
  */
-std::shared_ptr<OperCtx>& PluginCtx::getOperCtx() {
+std::shared_ptr<OperContext>& PluginContext::getOperContext() {
     return m_operCtx;
 }
 
@@ -41,8 +61,8 @@ std::shared_ptr<OperCtx>& PluginCtx::getOperCtx() {
  * @return Module change context.
  *
  */
-std::shared_ptr<ModuleChangeCtx>& PluginCtx::getModuleChangeCtx() {
-    return m_moduleChangeCtx;
+std::shared_ptr<ModuleChangeContext>& PluginContext::getModuleChangeContext() {
+    return m_changeCtx;
 }
 
 /**
@@ -51,7 +71,7 @@ std::shared_ptr<ModuleChangeCtx>& PluginCtx::getModuleChangeCtx() {
  * @return RPC context.
  *
  */
-std::shared_ptr<RPCCtx>& PluginCtx::getRPCCtx() {
+std::shared_ptr<RpcContext>& PluginContext::getRpcContext() {
     return m_rpcCtx;
 }
 
@@ -61,7 +81,7 @@ std::shared_ptr<RPCCtx>& PluginCtx::getRPCCtx() {
  * @return Notification context.
  *
  */
-std::shared_ptr<NotifCtx>& PluginCtx::getNotifCtx() {
+std::shared_ptr<NotifContext>& PluginContext::getNotifContext() {
     return m_notifCtx;
 }
 

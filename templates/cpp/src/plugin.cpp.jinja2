@@ -10,7 +10,7 @@ int sr_plugin_init_cb(sr_session_ctx_t *session, void **priv)
 {
 	sr::ErrorCode error = sysrepo::ErrorCode::Ok;
 	auto sess = sysrepo::wrapUnmanagedSession(session);
-	auto plugin_ctx = new {{root_namespace}}::PluginCtx(sess);
+	auto plugin_ctx = new {{root_namespace}}::PluginContext(sess);
 
 	*priv = static_cast<void *>(plugin_ctx);
 
@@ -19,6 +19,6 @@ int sr_plugin_init_cb(sr_session_ctx_t *session, void **priv)
 
 void sr_plugin_cleanup_cb(sr_session_ctx_t *session, void *priv)
 {
-	auto plugin_ctx = static_cast<{{root_namespace}}::PluginCtx *>(priv);
+	auto plugin_ctx = static_cast<{{root_namespace}}::PluginContext *>(priv);
 	delete plugin_ctx;
 }
