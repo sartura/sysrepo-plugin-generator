@@ -26,7 +26,7 @@ class {{to_camel_case(cb.sufix, True)}}RpcCb {
          * @param ctx Plugin RPC context.
          *
          */
-        {{to_camel_case(cb.sufix, True)}}RpcCb(std::shared_ptr<{{root_namespace}}::RPCCtx> ctx);
+        {{to_camel_case(cb.sufix, True)}}RpcCb(std::shared_ptr<{{root_namespace}}::RpcContext> ctx);
 
         /**
          * sysrepo-plugin-generator: Generated RPC/action operator() for path {{cb.path}}.
@@ -46,7 +46,7 @@ class {{to_camel_case(cb.sufix, True)}}RpcCb {
         sr::ErrorCode operator()(sr::Session session, uint32_t subscriptionId, std::string_view path, const ly::DataNode input, sr::Event event, uint32_t requestId, ly::DataNode output);
 
     private:
-        std::shared_ptr<{{root_namespace}}::RPCCtx> m_ctx;
+        std::shared_ptr<{{root_namespace}}::RpcContext> m_ctx;
 };
 
 {% endfor %}

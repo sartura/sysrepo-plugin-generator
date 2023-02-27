@@ -9,7 +9,7 @@ namespace sub::rpc {
 * @param ctx Plugin RPC context.
 *
 */
-{{to_camel_case(cb.sufix, True)}}RpcCb::{{to_camel_case(cb.sufix, True)}}RpcCb(std::shared_ptr<{{root_namespace}}::RPCCtx> ctx)
+{{to_camel_case(cb.sufix, True)}}RpcCb::{{to_camel_case(cb.sufix, True)}}RpcCb(std::shared_ptr<{{root_namespace}}::RpcContext> ctx)
 {
     m_ctx = ctx;
 }
