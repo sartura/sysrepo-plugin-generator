@@ -40,24 +40,34 @@ class OperSubscriptionWalker(Walker):
             last_prefix = self.ctx.prefix_stack[depth]
 
         if node.nodetype() == LyNode.LEAF or node.nodetype() == LyNode.LEAFLIST:
-            if node.config_false():
-                if last_prefix is not None:
-                    self.ctx.callbacks.append(
-                        Callback(node.data_path(), to_c_variable(last_prefix + "_" + node.name())))
-                else:
-                    self.ctx.callbacks.append(
-                        Callback(node.data_path(), to_c_variable(node.name())))
-                return True
+            # if node.config_false():
+            if last_prefix is not None:
+                self.ctx.callbacks.append(
+                    Callback(node.data_path(), to_c_variable(last_prefix + "_" + node.name())))
+            else:
+                self.ctx.callbacks.append(
+                    Callback(node.data_path(), to_c_variable(node.name())))
+            return True
         else:
             c_var = to_c_variable(node.name())
             if self.prefix_cfg.check_prefix(c_var):
                 self.ctx.prefix_stack[depth +
                                       1] = self.prefix_cfg.get_prefix_value(c_var)
+                if last_prefix is not None:
+                    self.ctx.callbacks.append(
+                        Callback(node.data_path(), last_prefix + "_" + self.prefix_cfg.get_prefix_value(c_var)))
+                else:
+                    self.ctx.callbacks.append(
+                        Callback(node.data_path(), self.prefix_cfg.get_prefix_value(c_var)))
             elif last_prefix is not None:
                 self.ctx.prefix_stack[depth +
-                                      1] = last_prefix
+                                      1] = last_prefix + "_" + c_var
+                self.ctx.callbacks.append(
+                    Callback(node.data_path(), to_c_variable(last_prefix + "_" + node.name())))
             else:
                 self.ctx.prefix_stack[depth + 1] = None
+                self.ctx.callbacks.append(
+                    Callback(node.data_path(), c_var))
 
         return False
 
