@@ -10,21 +10,19 @@ Provide needed arguments for the script and run it to generate plugin directory 
 
 ```
 $ python3 sysrepo-plugin-generator.py -h
-usage: sysrepo-plugin-generator.py [-h] -p PREFIX -d DIR -m MODULES [MODULES ...] -M MAIN_MODULE -o OUTDIR
+usage: sysrepo-plugin-generator.py [-h] -d YANG_DIR -o OUT_DIR -c CONFIG -l LANG
 
 Sysrepo plugin generator.
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
-  -p PREFIX, --prefix PREFIX
-                        Provide prefix that will be used in the plugin generation.
-  -d DIR, --dir DIR     Directory containing all the yang modules.
-  -m MODULES [MODULES ...], --modules MODULES [MODULES ...]
-                        YANG modules to use for plugin generation.
-  -M MAIN_MODULE, --main-module MAIN_MODULE
-                        Main YANG module to use for plugin generation.
-  -o OUTDIR, --outdir OUTDIR
+  -d YANG_DIR, --dir YANG_DIR
+                        Directory containing all the yang modules.
+  -o OUT_DIR, --outdir OUT_DIR
                         Output source directory to use.
+  -c CONFIG, --config CONFIG
+                        Configuration file to use for generation.
+  -l LANG, --lang LANG  Destination language to generate to (C or C++).
 ```
 
 ## Directory structure
