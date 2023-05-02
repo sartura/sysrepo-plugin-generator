@@ -1,0 +1,15 @@
+[generator]
+prefix = "ietf_acl"
+
+[yang.modules]
+main = "ietf-access-control-list"
+other = ["ietf-ethertypes", "ietf-packet-fields"]
+
+[yang.types]
+identityref = "char *"
+
+[yang.prefix]
+acl = "acl"
+acl-set = "acl-set"
+ingress = "ingress"
+egress = "egress"
