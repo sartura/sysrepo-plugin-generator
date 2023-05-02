@@ -9,6 +9,7 @@ other = ["ietf-ip"]
 identityref = "char *"
 
 [yang.prefix]
+interface = "interface"
 statistics = "stats"
 address = "addr"
 neighbor = "neigh"
