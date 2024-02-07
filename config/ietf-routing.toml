@@ -4,7 +4,6 @@ prefix = "ietf_rt"
 [yang.modules]
 main = "ietf-routing"
 other = ["ietf-ipv4-unicast-routing", "ietf-ipv6-unicast-routing"]
-# TODO: add feature selection support
 features = ["router-id"]
 
 [yang.types]

@@ -7,7 +7,7 @@ import jinja2
 
 import libyang
 
-from typing import Dict, Any
+from typing import List, Dict, Any, Optional
 
 from core.config import GeneratorConfiguration
 from core.generator import Generator
@@ -115,16 +115,20 @@ class CPPGenerator(Generator):
         # load main module
         self.ctx.load_module(mod_cfg.get_main_module())
 
+        # load features (optional, if None then all are enabled)
+        features = mod_cfg.get_features()
+
         # load all needed modules
         for m in yang_cfg.get_modules_configuration().get_other_modules():
             self.ctx.load_module(m)
-            self.ctx.get_module(m).feature_enable_all()
+            # only enable the configured features
+            self.__enable_configured_features(self.ctx.get_module(m), features)
 
         # use main module for plugin generation
         self.ly_mod = self.ctx.get_module(mod_cfg.get_main_module())
 
-        # enable all features
-        self.ly_mod.feature_enable_all()
+        # only enable the configured features
+        self.__enable_configured_features(self.ly_mod, features)
 
         self.logger.info("Loaded module {}".format((self.ly_mod.name())))
         self.logger.info(
@@ -137,6 +141,16 @@ class CPPGenerator(Generator):
             trim_blocks=True,
             lstrip_blocks=True
         )
+
+    def __enable_configured_features(self, module, features: Optional[List[str]]):
+        self.logger.info("Features in module {}:".format(module.name()))
+        module.feature_disable_all()
+        for feature in module.features():
+            if features == None or feature.name() in features:
+                module.feature_enable(feature.name())
+                self.logger.info("\tEnabled feature {} in module {}".format(feature, module.name()))
+            else:
+                self.logger.info("\tDisabled feature {} in module {}".format(feature, module.name()))
 
     def generate_directories(self):
         cmake_modules_dir = os.path.join(self.out_dir, "CMakeModules")
