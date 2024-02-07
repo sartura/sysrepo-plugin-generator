@@ -1,9 +1,10 @@
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 
 class YangModulesConfiguration:
     main_module: str
     other_modules: List[str] = []
+    features: Optional[List[str]] = None
 
     def __init__(self, config: Dict[str, Any]) -> None:
         assert ("main" in config)
@@ -13,11 +14,17 @@ class YangModulesConfiguration:
         if "other" in config:
             self.other_modules = config["other"]
 
+        if "features" in config:
+            self.features = config["features"]
+
     def get_main_module(self) -> str:
         return self.main_module
 
     def get_other_modules(self) -> List[str]:
         return self.other_modules
+
+    def get_features(self) -> Optional[List[str]]:
+        return self.features
 
 
 class YangPrefixConfiguration:
