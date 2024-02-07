@@ -8,13 +8,13 @@
 
 int {{fn.get_name()}}(const struct ly_ctx *ly_ctx, struct lyd_node *{{ fn.parent_name }}_node, struct lyd_node **{{ fn.name }}_node)
 {
-    return srpc_ly_tree_create_container(ly_ctx, {{ fn.parent_name }}_node, {{ fn.name }}_node, "{{fn.node.name()}}");
+    return srpc_ly_tree_create_container(ly_ctx, {{ fn.parent_name }}_node, {{ fn.name }}_node, "{{ fn.model_prefix }}{{ fn.node.name() }}");
 }
     {% else %}
 
 int {{fn.get_name()}}(const struct ly_ctx *ly_ctx, struct lyd_node **{{ fn.name }}_node)
 {
-    return srpc_ly_tree_create_container(ly_ctx, NULL, {{ fn.name }}_node, "{{fn.node.name()}}");
+    return srpc_ly_tree_create_container(ly_ctx, NULL, {{ fn.name }}_node, "/{{ fn.node.module() }}:{{ fn.node.name() }}");
 }
     {% endif %}
     {% endif %}
@@ -23,21 +23,21 @@ int {{fn.get_name()}}(const struct ly_ctx *ly_ctx, struct lyd_node **{{ fn.name 
 int {{fn.get_name()}}(const struct ly_ctx *ly_ctx, struct lyd_node *{{ fn.parent_name }}_node, struct lyd_node **{{ fn.name }}_node{% for key in fn.node.keys() %}, const char *{{key.name()}}{% endfor %})
 {
     // TODO: fix this for multiple keys with SRPC library
-    return srpc_ly_tree_create_list(ly_ctx, {{ fn.parent_name }}_node, {{ fn.name }}_node, "{{ fn.node.name() }}", "name", name);
+    return srpc_ly_tree_create_list(ly_ctx, {{ fn.parent_name }}_node, {{ fn.name }}_node, "{{ fn.model_prefix }}{{ fn.node.name() }}"{% for key in fn.node.keys() %}, "{{key.name()}}", {{key.name()}}{% endfor %});
 }
     {% endif %}
     {% if fn.node.nodetype() == LyNode.LEAFLIST %}
 
 int {{fn.get_name()}}(const struct ly_ctx *ly_ctx, struct lyd_node *{{ fn.parent_name }}_node, const char *{{fn.name}})
 {
-    return srpc_ly_tree_append_leaf_list(ly_ctx, {{ fn.parent_name }}_node, NULL, "{{ fn.node.name() }}", {{fn.name}});
+    return srpc_ly_tree_append_leaf_list(ly_ctx, {{ fn.parent_name }}_node, NULL, "{{ fn.model_prefix }}{{ fn.node.name() }}", {{fn.name}});
 }
     {% endif %}
     {% if fn.node.nodetype() == LyNode.LEAF %}
 
 int {{fn.get_name()}}(const struct ly_ctx *ly_ctx, struct lyd_node *{{ fn.parent_name }}_node, const char *{{fn.name}})
 {
-    return srpc_ly_tree_create_leaf(ly_ctx, {{ fn.parent_name }}_node, NULL, "{{ fn.node.name() }}", {{ fn.name }});
+    return srpc_ly_tree_create_leaf(ly_ctx, {{ fn.parent_name }}_node, NULL, "{{ fn.model_prefix }}{{ fn.node.name() }}", {{ fn.name }});
 }
     {% endif %}
 {% endfor %}

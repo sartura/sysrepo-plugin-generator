@@ -11,6 +11,9 @@ class LibyangTreeFunction:
         self.name = to_c_variable(node.name())
         self.parent_name = to_c_variable(
             parent_node.name()) if parent_node else None
+        self.model_prefix = self.model_prefix = node.module().name() + ":" \
+            if parent_node and parent_node.module().name() != node.module().name() \
+            else ""
 
     def get_name(self):
         if self.prefix is None:
