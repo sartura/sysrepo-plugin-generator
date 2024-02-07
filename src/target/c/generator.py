@@ -6,7 +6,7 @@ import shutil
 import jinja2
 from .libraries.uthash import UTHashLibrary
 
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 # add logging
 import logging
@@ -148,10 +148,14 @@ class CGenerator(Generator):
         # load main module
         self.ctx.load_module(mod_cfg.get_main_module())
 
-       # load all needed modules
+        # load features (optional, if None then all are enabled)
+        features = mod_cfg.get_features()
+
+        # load all needed modules
         for m in yang_cfg.get_modules_configuration().get_other_modules():
             self.ctx.load_module(m)
-            self.ctx.get_module(m).feature_enable_all()
+            # only enable the configured features
+            self.__enable_configured_features(self.ctx.get_module(m), features)
 
         # use main module for plugin generation
         self.module = self.ctx.get_module(mod_cfg.get_main_module())
@@ -172,9 +176,8 @@ class CGenerator(Generator):
         self.generated_files = []
         self.include_dirs = ["src"]
 
-        # assume all features enabled for full module generation
-        # TODO: add feature selection support
-        self.module.feature_enable_all()
+        # only enable the configured features
+        self.__enable_configured_features(self.module, features)
 
         self.logger.info("Loaded module {}".format((self.module.name())))
         self.logger.info(
@@ -252,6 +255,16 @@ class CGenerator(Generator):
                 print("  {} {};".format(vd.get_type(), vd.get_name()))
 
         # print(self.types_walker.ctx.structs)
+
+    def __enable_configured_features(self, module, features: Optional[List[str]]):
+        self.logger.info("Features in module {}:".format(module.name()))
+        module.feature_disable_all()
+        for feature in module.features():
+            if features == None or feature.name() in features:
+                module.feature_enable(feature.name())
+                self.logger.info("\tEnabled feature {} in module {}".format(feature, module.name()))
+            else:
+                self.logger.info("\tDisabled feature {} in module {}".format(feature, module.name()))
 
     def generate_directories(self):
         deps_dir = os.path.join(self.out_dir, "deps")
