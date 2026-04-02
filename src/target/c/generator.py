@@ -406,9 +406,9 @@ class CGenerator(Generator):
 
         # ly_tree
         self.__generate_file("src/plugin/ly_tree.h",  plugin_prefix=self.config.get_prefix(),
-                             ly_tree_functions=self.ly_tree_walker.get_functions(), LyNode=LyNode)
+                             ly_tree_functions=self.ly_tree_walker.get_functions(), LyNode=LyNode, to_c_variable=to_c_variable)
         self.__generate_file("src/plugin/ly_tree.c",  plugin_prefix=self.config.get_prefix(),
-                             ly_tree_functions=self.ly_tree_walker.get_functions(), LyNode=LyNode)
+                             ly_tree_functions=self.ly_tree_walker.get_functions(), LyNode=LyNode, to_c_variable=to_c_variable)
         # for fn in self.ly_tree_walker.get_functions():
         #     if fn.node.nodetype() == LyNode.LIST:
         #         print(fn.node.keys())

@@ -17,7 +17,7 @@ int {{fn.get_name()}}(
         struct lyd_node *{{ fn.parent_name }}_node, 
         struct lyd_node **{{ fn.name }}_node
         {% for key in fn.node.keys() %}
-            , const char *{{key.name()}}
+            , const char *{{to_c_variable(key.name())}}
         {% endfor %}
     );
     {% endif %}

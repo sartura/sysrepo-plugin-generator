@@ -19,11 +19,22 @@ int {{fn.get_name()}}(const struct ly_ctx *ly_ctx, struct lyd_node **{{ fn.name 
     {% endif %}
     {% endif %}
     {% if fn.node.nodetype() == LyNode.LIST %}
+    {% set keys = fn.node.keys()|list %}
 
-int {{fn.get_name()}}(const struct ly_ctx *ly_ctx, struct lyd_node *{{ fn.parent_name }}_node, struct lyd_node **{{ fn.name }}_node{% for key in fn.node.keys() %}, const char *{{key.name()}}{% endfor %})
+int {{fn.get_name()}}(const struct ly_ctx *ly_ctx, struct lyd_node *{{ fn.parent_name }}_node, struct lyd_node **{{ fn.name }}_node{% for key in keys %}, const char *{{to_c_variable(key.name())}}{% endfor %})
 {
-    // TODO: fix this for multiple keys with SRPC library
-    return srpc_ly_tree_create_list(ly_ctx, {{ fn.parent_name }}_node, {{ fn.name }}_node, "{{ fn.model_prefix }}{{ fn.node.name() }}"{% for key in fn.node.keys() %}, "{{key.name()}}", {{key.name()}}{% endfor %});
+    {% if keys|length == 0 %}
+    return srpc_ly_tree_create_list_without_key(ly_ctx, {{ fn.parent_name }}_node, {{ fn.name }}_node, "{{ fn.model_prefix }}{{ fn.node.name() }}");
+    {% elif keys|length == 1 %}
+    return srpc_ly_tree_create_list(ly_ctx, {{ fn.parent_name }}_node, {{ fn.name }}_node, "{{ fn.model_prefix }}{{ fn.node.name() }}", "{{keys[0].name()}}", {{to_c_variable(keys[0].name())}});
+    {% else %}
+    srpc_key_value_pair_t kv_pairs[] = {
+        {% for key in keys %}
+        { "{{key.name()}}", {{to_c_variable(key.name())}} },
+        {% endfor %}
+    };
+    return srpc_ly_tree_create_list_full(ly_ctx, {{ fn.parent_name }}_node, {{ fn.name }}_node, "{{ fn.model_prefix }}{{ fn.node.name() }}", kv_pairs, {{keys|length}});
+    {% endif %}
 }
     {% endif %}
     {% if fn.node.nodetype() == LyNode.LEAFLIST %}

@@ -8,6 +8,7 @@ from core.walker import Walker
 class ChangeSubscriptionContext:
     def __init__(self):
         self.callbacks = []
+        self.callback_names = set()
         self.prefix_stack = {0: ""}
 
 
@@ -25,8 +26,10 @@ class ChangeSubscriptionWalker(Walker):
         last_prefix = self.ctx.prefix_stack[depth]
 
         if node.nodetype() == LyNode.LEAF or node.nodetype() == LyNode.LEAFLIST or node.nodetype() == LyNode.LIST:
-            self.ctx.callbacks.append(Callback(node.data_path(),
-                                               to_c_variable(last_prefix + "_" + node.name())[1:]))
+            cb_name = to_c_variable(last_prefix + "_" + node.name())[1:]
+            if cb_name not in self.ctx.callback_names:
+                self.ctx.callback_names.add(cb_name)
+                self.ctx.callbacks.append(Callback(node.data_path(), cb_name))
 
             return True
         else:

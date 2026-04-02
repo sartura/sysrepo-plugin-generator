@@ -7,6 +7,7 @@ from core.walker import Walker
 class OperationalSubscriptionContext:
     def __init__(self):
         self.callbacks = []
+        self.callback_names = set()
         self.prefix_stack = {0: ""}
 
 
@@ -20,14 +21,18 @@ class OperationalSubscriptionWalker(Walker):
         last_prefix = self.ctx.prefix_stack[depth]
 
         if (node.nodetype() == LyNode.LEAF or node.nodetype() == LyNode.LEAFLIST) and node.config_false():
-            self.ctx.callbacks.append(Callback(node.data_path(),
-                                               to_c_variable(last_prefix + "_" + node.name())[1:]))
+            cb_name = to_c_variable(last_prefix + "_" + node.name())[1:]
+            if cb_name not in self.ctx.callback_names:
+                self.ctx.callback_names.add(cb_name)
+                self.ctx.callbacks.append(Callback(node.data_path(), cb_name))
 
             # return True
         elif node.nodetype() == LyNode.LIST:
             # also add optional list callback
-            self.ctx.callbacks.append(Callback(node.data_path(),
-                                               to_c_variable(last_prefix + "_" + node.name())[1:]))
+            cb_name = to_c_variable(last_prefix + "_" + node.name())[1:]
+            if cb_name not in self.ctx.callback_names:
+                self.ctx.callback_names.add(cb_name)
+                self.ctx.callbacks.append(Callback(node.data_path(), cb_name))
             self.ctx.prefix_stack[depth+1] = last_prefix + \
                 "_" + to_c_variable(node.name())
         else:

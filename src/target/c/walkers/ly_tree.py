@@ -9,6 +9,7 @@ from core.utils import LibyangTreeFunction
 class LibyangTreeContext:
     def __init__(self, prefix):
         self.functions = []
+        self.function_names = set()
         self.main_prefix = prefix + "_ly_tree_create"
         self.parent_stack = {
             0: (None, self.main_prefix)
@@ -30,8 +31,11 @@ class LyTreeWalker(Walker):
         # print("{}[{} - {}]".format(
         #     to_c_variable(node.name()), node.keyword(), parent_prefix + "_" + to_c_variable(node.name())))
 
-        self.ctx.functions.append(LibyangTreeFunction(
-            parent_prefix, parent, node))
+        fn = LibyangTreeFunction(parent_prefix, parent, node)
+        fn_name = fn.get_name()
+        if fn_name not in self.ctx.function_names:
+            self.ctx.function_names.add(fn_name)
+            self.ctx.functions.append(fn)
 
         return False
 
