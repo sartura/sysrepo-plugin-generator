@@ -27,7 +27,7 @@ options:
 
 ## Directory structure
 
-The generator will follow the following source directory structure (the example is taken for the ietf-system plugin):
+The generator will produce the following source directory structure (the example is taken for the ietf-system plugin):
 
 ```
 |-- main.c
@@ -131,14 +131,14 @@ The main files are:
   - `plugin.h` - init and cleanup plugin callbacks
   - `plugin.c` - init and cleanup implementation
   - `common.h` - YANG paths and other commonly used macros
-  - `context.h` - used context throughout the plugin callbacks
-  - `types.h` - used types in the plugin (common structures, enums and unions)
+  - `context.h` - context used throughout the plugin callbacks
+  - `types.h` - types used in the plugin (common structures, enums and unions)
   - `ly_tree.(h|c)` - API for creating libyang tree nodes based on the main YANG module, here `ietf-system`
 
 Other parts of the plugin include:
   - `plugin/api/` - the API for loading, storing and changing data on the system
   - `plugin/data/` - helper functions for types defined in `types.h` - example would be implementing `init()` and `free()` functionalities for a list of types - TODO
-  - `plugin/startup/` - load and store functionalities for the startup datastore - initial load for startup when the plugin is first started and constant store API for when the plugin starts up again so that the state is left unchanged
+  - `plugin/startup/` - load and store functionalities for the startup datastore - initial load for startup when the plugin is first started, and constant store API for when the plugin starts up again so that the state is left unchanged
   - `plugin/subscription/` - change, operational and RPC/action callbacks, used in `plugin.c` file which subscribes all callbacks to their respective paths
 
 `plugin/data/` and `plugin/api/` folders use separation based on the YANG containers - for each container one folder is used which enables easier navigation. In these folders, files can be separated based on more containers or lists etc.
