@@ -25,6 +25,23 @@ options:
   -l LANG, --lang LANG  Destination language to generate to (C or C++).
 ```
 
+## Example
+
+Generate the ietf-system plugin using the provided YANG modules and configuration:
+
+```
+$ python3 src/sysrepo-plugin-generator.py -d yang -o generated/ietf-system -l C -c config/ietf-system.toml
+```
+
+Build the generated plugin:
+
+```
+$ cd generated/ietf-system
+$ mkdir build && cd build
+$ cmake ..
+$ make -j
+```
+
 ## Directory structure
 
 The generator will produce the following source directory structure (the example is taken for the ietf-system plugin):
