@@ -453,6 +453,8 @@ class CGenerator(Generator):
         types = self.api_walker.get_types()
 
         for dir in dirs:
+            if dir not in dir_functions:
+                continue
             # generate all files in this directory
             prefix, node_list = dir_functions[dir]
 
