@@ -172,6 +172,13 @@ class CGenerator(Generator):
         self.defines, self.defines_map = extract_defines(
             self.config.get_prefix(), self.module)
 
+        # find the first config container's YANG path define for datastore check
+        self.datastore_check_path = None
+        for root_node in self.module.children():
+            if not root_node.config_false() and root_node.nodetype() == LyNode.CONTAINER:
+                self.datastore_check_path = self.defines_map.get(root_node.data_path())
+                break
+
         # append the path to the file once generated - at the end used with CMakeLists.txt
         self.generated_files = []
         self.include_dirs = ["src"]
@@ -373,7 +380,8 @@ class CGenerator(Generator):
                              rpc_callbacks=self.rpc_walker.get_callbacks(),
                              oper_callbacks=self.operational_walker.get_callbacks(),
                              change_callbacks=self.change_walker.get_callbacks(),
-                             defines_map=self.defines_map
+                             defines_map=self.defines_map,
+                             datastore_check_path=self.datastore_check_path
                              )
 
         self.__generate_file(
@@ -414,7 +422,8 @@ class CGenerator(Generator):
         self.__generate_file("src/plugin/startup/store.h",
                              plugin_prefix=self.config.get_prefix())
         self.__generate_file("src/plugin/startup/store.c", plugin_prefix=self.config.get_prefix(),
-                             store_callbacks=self.startup_walker.get_callbacks())
+                             store_callbacks=self.startup_walker.get_callbacks(),
+                             datastore_check_path=self.datastore_check_path)
 
     def __generate_subscription_files(self):
         self.__generate_file("src/plugin/subscription/change.h", plugin_prefix=self.config.get_prefix(),

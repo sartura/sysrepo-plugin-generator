@@ -75,7 +75,7 @@ int sr_plugin_init_cb(sr_session_ctx_t *running_session, void **private_data)
 
 	ctx->startup_session = startup_session;
 
-	error = srpc_check_empty_datastore(startup_session, "[ENTER_PATH_TO_CHECK]", &empty_startup);
+	error = srpc_check_empty_datastore(startup_session, {{datastore_check_path}}, &empty_startup);
 	if (error) {
 		SRPLG_LOG_ERR(PLUGIN_NAME, "Failed checking datastore contents: %d", error);
 		goto error_out;
