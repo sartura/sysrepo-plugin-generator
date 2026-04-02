@@ -189,15 +189,18 @@ class TypesWalker(Walker):
         self.ctx = TypesContext(prefix, prefix_cfg)
 
     def get_parent_name(self, depth: int) -> str:
-        return to_c_variable("{}_{}".format(
-            self.ctx.get_prefix(), self.ctx.get_parent(depth)))
+        return self.ctx.get_parent(depth)
+
+    def make_struct_name(self, node_name: str, depth: int) -> str:
+        if depth <= 1:
+            return to_c_variable("{}_{}".format(self.ctx.get_prefix(), node_name))
+        else:
+            return to_c_variable("{}_{}".format(self.ctx.get_parent(depth), node_name))
 
     def walk_node(self, node: SNode, depth: int):
         if node.nodetype() == LyNode.CONTAINER:
-            self.ctx.push_parent(depth, node.name())
-
-            struct_name = to_c_variable(
-                "{}_{}".format(self.ctx.get_prefix(), node.name()))
+            struct_name = self.make_struct_name(node.name(), depth)
+            self.ctx.push_parent(depth, struct_name)
             var_name = to_c_variable(node.name())
 
             td = Typedef("struct", struct_name)
@@ -216,12 +219,11 @@ class TypesWalker(Walker):
                     td.get_typedef(), var_name, "struct"))
 
         elif node.nodetype() == LyNode.LEAF:
-            # print("{} {}".format(node.type().basename(), node.name()))
-
             if node.type().basename() == "enumeration":
                 # add enum type
+                parent = self.get_parent_name(depth)
                 enum_name = to_c_variable(
-                    "{}_{}".format(self.ctx.get_prefix(), node.name()))
+                    "{}_{}".format(parent, node.name()))
 
                 enum_ed = EnumDef(enum_name, [to_c_variable("{}_{}".format(
                     enum_name, str(e))) for e in node.type().enums()])
@@ -251,8 +253,7 @@ class TypesWalker(Walker):
                     node.type().basename(), to_c_variable(node.name()), "var"))
 
         elif node.nodetype() == LyNode.LEAFLIST:
-            struct_name = to_c_variable(
-                "{}_{}".format(self.ctx.get_prefix(), node.name()))
+            struct_name = self.make_struct_name(node.name(), depth)
             var_name = to_c_variable(node.name())
 
             # element struct
@@ -278,14 +279,10 @@ class TypesWalker(Walker):
             self.ctx.add_struct(data_sd)
             self.ctx.add_typedef(data_sd, data_td)
 
-            self.ctx.typedefs.append(element_td)
-            self.ctx.structs.append(element_sd)
-
-            # add data variable to the data struct
+            # add data variable to the data struct (not the parent)
             if node.type().basename() == "enumeration":
-                # add enum type
                 enum_name = to_c_variable(
-                    "{}_{}".format(self.ctx.get_prefix(), node.name()))
+                    "{}_{}".format(struct_name, node.name()))
 
                 enum_ed = EnumDef(enum_name, [to_c_variable("{}_{}".format(
                     enum_name, str(e))) for e in node.type().enums()])
@@ -294,24 +291,10 @@ class TypesWalker(Walker):
                 self.ctx.add_enum(enum_ed)
                 self.ctx.add_typedef(enum_ed, enum_td)
 
-                assert (depth > 0)
-
-                parent = self.get_parent_name(depth)
-
-                assert (self.ctx.parent_exists(parent))
-
-                self.ctx.add_var(parent, VarDef(
+                self.ctx.add_var(struct_name, VarDef(
                     enum_td.typedef, to_c_variable(node.name()), "enum"))
             else:
-                # previous value has to be a struct of some kind
-
-                assert (depth > 0)
-
-                parent = self.get_parent_name(depth)
-
-                assert (self.ctx.parent_exists(parent))
-
-                self.ctx.add_var(parent, VarDef(
+                self.ctx.add_var(struct_name, VarDef(
                     node.type().basename(), to_c_variable(node.name()), "var"))
 
             # add to parent struct
@@ -326,10 +309,8 @@ class TypesWalker(Walker):
                 element_td.get_typedef() + "*", var_name, "var"))
 
         elif node.nodetype() == LyNode.LIST:
-            self.ctx.push_parent(depth, node.name())
-
-            struct_name = to_c_variable(
-                "{}_{}".format(self.ctx.get_prefix(), node.name()))
+            struct_name = self.make_struct_name(node.name(), depth)
+            self.ctx.push_parent(depth, struct_name)
             var_name = to_c_variable(node.name())
 
             # element struct
@@ -354,9 +335,6 @@ class TypesWalker(Walker):
 
             self.ctx.add_struct(data_sd)
             self.ctx.add_typedef(data_sd, data_td)
-
-            self.ctx.typedefs.append(element_td)
-            self.ctx.structs.append(element_sd)
 
             if depth > 0:
                 parent = self.get_parent_name(depth)

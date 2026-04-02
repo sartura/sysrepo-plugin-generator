@@ -20,7 +20,6 @@ class APIContext:
         }
 
         self.types = {
-            "unknown": 'unknown',
             "binary": "void *",
             "uint8": "uint8_t",
             "uint16": "uint16_t",
@@ -31,11 +30,11 @@ class APIContext:
             "boolean": "uint8_t",
             "decimal64": "double",
             "empty": "void",
-            "enumeration": 'unknown',
-            "identityref": 'unknown',
-            "instance-id": 'unknown',
-            "leafref": 'unknown',
-            "union": 'unknown',
+            "enumeration": None,
+            "identityref": None,
+            "instance-id": None,
+            "leafref": None,
+            "union": None,
             "int8": "int8_t",
             "int16": "int16_t",
             "int32": "int32_t",
