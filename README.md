@@ -42,6 +42,49 @@ $ cmake ..
 $ make -j
 ```
 
+## Available plugins
+
+The following plugin configurations are available in the `config/` folder:
+
+| Config | YANG module |
+|--------|-------------|
+| `ietf-access-control.toml` | ietf-access-control-list |
+| `ietf-dhcpv6-client.toml` | ietf-dhcpv6-client |
+| `ietf-interfaces.toml` | ietf-interfaces |
+| `ietf-routing.toml` | ietf-routing |
+| `ietf-system.toml` | ietf-system |
+
+Generate and build a specific plugin:
+
+```
+$ python3 src/sysrepo-plugin-generator.py -d yang -o generated/ietf-access-control -l C -c config/ietf-access-control.toml
+$ python3 src/sysrepo-plugin-generator.py -d yang -o generated/ietf-dhcpv6-client -l C -c config/ietf-dhcpv6-client.toml
+$ python3 src/sysrepo-plugin-generator.py -d yang -o generated/ietf-interfaces -l C -c config/ietf-interfaces.toml
+$ python3 src/sysrepo-plugin-generator.py -d yang -o generated/ietf-routing -l C -c config/ietf-routing.toml
+$ python3 src/sysrepo-plugin-generator.py -d yang -o generated/ietf-system -l C -c config/ietf-system.toml
+```
+
+Then build the generated plugin:
+
+```
+$ cd generated/<plugin-name>
+$ mkdir build && cd build
+$ cmake ..
+$ make -j
+```
+
+Generate and build all plugins at once:
+
+```
+$ for cfg in config/*.toml; do
+    name=$(basename "$cfg" .toml)
+    mkdir -p "generated/$name"
+    python3 src/sysrepo-plugin-generator.py -d yang -o "generated/$name" -l C -c "$cfg"
+    cd "generated/$name" && mkdir -p build && cd build && cmake .. && make -j
+    cd ../../..
+  done
+```
+
 ## Directory structure
 
 The generator will produce the following source directory structure (the example is taken for the ietf-system plugin):
