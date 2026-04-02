@@ -85,6 +85,28 @@ $ for cfg in config/*.toml; do
   done
 ```
 
+## Enabling YANG features in sysrepo
+
+The generator enables all YANG features when generating plugin code. For the plugin to work correctly at runtime, the same features must be enabled in sysrepo. Otherwise, subscriptions to feature-gated paths (e.g. `/ietf-system:system/radius/server`) will fail with "not found" errors.
+
+Enable all features for a module:
+
+```
+$ sudo sysrepoctl --change ietf-system --enable-feature '*'
+```
+
+Or enable specific features:
+
+```
+$ sudo sysrepoctl --change ietf-system --enable-feature radius --enable-feature authentication --enable-feature ntp
+```
+
+Check which features are currently enabled:
+
+```
+$ sysrepoctl -l | grep ietf-system
+```
+
 ## Directory structure
 
 The generator will produce the following source directory structure (the example is taken for the ietf-system plugin):
