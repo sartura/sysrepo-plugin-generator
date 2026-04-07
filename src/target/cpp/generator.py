@@ -145,12 +145,18 @@ class CPPGenerator(Generator):
     def __enable_configured_features(self, module, features: Optional[List[str]]):
         self.logger.info("Features in module {}:".format(module.name()))
         module.feature_disable_all()
-        for feature in module.features():
-            if features == None or feature.name() in features:
-                module.feature_enable(feature.name())
+        if features is None:
+            # enable all features at once - handles if-feature dependencies
+            module.feature_enable_all()
+            for feature in module.features():
                 self.logger.info("\tEnabled feature {} in module {}".format(feature, module.name()))
-            else:
-                self.logger.info("\tDisabled feature {} in module {}".format(feature, module.name()))
+        else:
+            for feature in module.features():
+                if feature.name() in features:
+                    module.feature_enable(feature.name())
+                    self.logger.info("\tEnabled feature {} in module {}".format(feature, module.name()))
+                else:
+                    self.logger.info("\tDisabled feature {} in module {}".format(feature, module.name()))
 
     def generate_directories(self):
         cmake_modules_dir = os.path.join(self.out_dir, "CMakeModules")
