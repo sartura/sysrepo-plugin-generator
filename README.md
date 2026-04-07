@@ -189,6 +189,7 @@ The generator will produce the following source directory structure (the example
 |   |       `-- store.h
 |   |-- common.h
 |   |-- context.h
+|   |-- types.h
 |   |-- data
 |   |-- ly_tree.c
 |   |-- ly_tree.h
