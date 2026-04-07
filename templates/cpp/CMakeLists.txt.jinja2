@@ -4,7 +4,9 @@ project({{project_name}})
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMakeModules")
 
-set(PLUGIN_LIRBARY_NAME {{project_name}})
+set(PLUGIN_LIBRARY_NAME srplg-{{project_name}})
+
+set(PLUGIN 0 CACHE BOOL "Build a plugin")
 
 find_package(SYSREPOCPP REQUIRED)
 find_package(LIBYANGCPP REQUIRED)
@@ -19,33 +21,57 @@ include_directories(
 )
 
 set(
-    PLUGIN_HEADERS
-
-{% for header in headers %}
-    {{header}}
-{% endfor %}
-)
-
-
-set(
     PLUGIN_SOURCES
 
 {% for src in sources %}
+    {% if src != "src/main.cpp" %}
     {{src}}
+    {% endif %}
 {% endfor %}
 )
 
+# plugin library
 add_library(
-    ${PLUGIN_LIRBARY_NAME}
-    MODULE
+    ${PLUGIN_LIBRARY_NAME}
+    STATIC
     ${PLUGIN_SOURCES}
 )
 
 target_link_libraries(
-    ${PLUGIN_LIRBARY_NAME}
+    ${PLUGIN_LIBRARY_NAME}
 
     ${SYSREPO_LIBRARIES}
     ${LIBYANG_LIBRARIES}
     ${SYSREPOCPP_LIBRARIES}
     ${LIBYANGCPP_LIBRARIES}
 )
+
+if(PLUGIN)
+    # compile as a module for sysrepo-plugind
+    add_library(
+        ${PROJECT_NAME}
+        MODULE ${PLUGIN_SOURCES}
+    )
+    target_link_libraries(
+        ${PROJECT_NAME}
+        ${SYSREPO_LIBRARIES}
+        ${LIBYANG_LIBRARIES}
+        ${SYSREPOCPP_LIBRARIES}
+        ${LIBYANGCPP_LIBRARIES}
+    )
+else()
+    add_executable(
+        ${PROJECT_NAME}
+        src/main.cpp
+    )
+    target_link_libraries(
+        ${PROJECT_NAME}
+
+        ${PLUGIN_LIBRARY_NAME}
+
+        ${SYSREPO_LIBRARIES}
+        ${LIBYANG_LIBRARIES}
+        ${SYSREPOCPP_LIBRARIES}
+        ${LIBYANGCPP_LIBRARIES}
+    )
+endif()

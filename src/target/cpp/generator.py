@@ -235,6 +235,7 @@ class CPPGenerator(Generator):
             "src/plugin.hpp", root_namespace=self.config.get_prefix().replace("_", "::"))
         self.__generate_file(
             "src/plugin.cpp", root_namespace=self.config.get_prefix().replace("_", "::"))
+        self.__generate_file("src/main.cpp")
 
     def __generate_cmake_files(self):
         # CMakeLists.txt

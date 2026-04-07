@@ -1,0 +1,50 @@
+#include <csignal>
+#include <unistd.h>
+
+#include <sysrepo.h>
+
+#include "plugin.hpp"
+
+volatile int exit_application = 0;
+
+static void sigint_handler([[maybe_unused]] int signum)
+{
+    exit_application = 1;
+}
+
+int main(void)
+{
+    int error = SR_ERR_OK;
+    sr_conn_ctx_t *connection = NULL;
+    sr_session_ctx_t *session = NULL;
+    void *private_data = NULL;
+
+    sr_log_stderr(SR_LL_INF);
+
+    error = sr_connect(SR_CONN_DEFAULT, &connection);
+    if (error) {
+        goto out;
+    }
+
+    error = sr_session_start(connection, SR_DS_RUNNING, &session);
+    if (error) {
+        goto out;
+    }
+
+    error = sr_plugin_init_cb(session, &private_data);
+    if (error) {
+        goto out;
+    }
+
+    signal(SIGINT, sigint_handler);
+    signal(SIGPIPE, SIG_IGN);
+    while (!exit_application) {
+        sleep(1);
+    }
+
+out:
+    sr_plugin_cleanup_cb(session, private_data);
+    sr_disconnect(connection);
+
+    return error ? -1 : 0;
+}
