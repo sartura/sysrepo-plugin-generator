@@ -1,4 +1,5 @@
 import argparse
+import os
 from core.config import GeneratorConfiguration
 from target.c.generator import CGenerator
 from target.cpp.generator import CPPGenerator
@@ -16,6 +17,8 @@ arg_parser.add_argument("-c", "--config", type=str, dest="config", required=True
 arg_parser.add_argument("-l", "--lang", type=str, dest="lang", required=True,
                         help="Destination language to generate to (C or C++).")
 args = arg_parser.parse_args()
+
+os.makedirs(args.out_dir, exist_ok=True)
 
 data = toml.load(args.config)
 
