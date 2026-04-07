@@ -33,7 +33,7 @@ Generate the ietf-system plugin using the provided YANG modules and configuratio
 $ python3 src/sysrepo-plugin-generator.py -d yang -o generated/ietf-system -l C -c config/ietf-system.toml
 ```
 
-Build the generated plugin:
+Build the generated plugin as a standalone executable (default):
 
 ```
 $ cd generated/ietf-system
@@ -41,6 +41,16 @@ $ mkdir build && cd build
 $ cmake ..
 $ make -j
 ```
+
+Build as a shared module (`.so`) for `sysrepo-plugind`:
+
+```
+$ cmake -DPLUGIN=1 ..
+$ make -j
+```
+
+- `PLUGIN=0` (default): builds a static library (`.a`) and a standalone executable that can run independently
+- `PLUGIN=1`: builds a shared module (`.so`) that can be loaded by `sysrepo-plugind`
 
 ## Available plugins
 
