@@ -235,3 +235,40 @@ Other parts of the plugin include:
   - `plugin/subscription/` - change, operational and RPC/action callbacks, used in `plugin.c` file which subscribes all callbacks to their respective paths
 
 `plugin/data/` and `plugin/api/` folders use separation based on the YANG containers - for each container one folder is used which enables easier navigation. In these folders, files can be separated based on more containers or lists etc.
+
+## Directory structure (C++)
+
+The C++ generator produces the following source directory structure:
+
+```
+|-- main.cpp
+|-- plugin.hpp
+|-- plugin.cpp
+`-- core
+    |-- context.hpp
+    |-- context.cpp
+    |-- api
+    |-- data
+    |-- sub
+    |   |-- change.cpp
+    |   |-- change.hpp
+    |   |-- oper.cpp
+    |   |-- oper.hpp
+    |   |-- rpc.cpp
+    |   `-- rpc.hpp
+    `-- yang
+        |-- tree.cpp
+        `-- tree.hpp
+```
+
+The main files are:
+  - `main.cpp` - standalone plugin independent of `sysrepo-plugind`
+  - `plugin.hpp` - init and cleanup plugin callbacks (`extern "C"`)
+  - `plugin.cpp` - init and cleanup implementation
+  - `core/context.(hpp|cpp)` - plugin context with session, subscription handle, and sub-contexts for operational, module change, RPC and notification data
+
+Other parts of the plugin include:
+  - `core/api/` - the API for loading, storing and changing data on the system
+  - `core/data/` - helper functions for plugin data types - TODO
+  - `core/sub/` - subscription callbacks (module change, operational, RPC/action)
+  - `core/yang/` - libyang tree API for creating nodes based on the main YANG module
